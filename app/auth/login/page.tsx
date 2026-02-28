@@ -74,6 +74,7 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (err) {
+      console.log("errors:", err)
       setAuthError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -81,72 +82,76 @@ export default function LoginPage() {
   };
 
   return (
-    <Box
-      className="max-w-md mx-auto mt-10 p-8 rounded-2xl shadow-sm bg-white"
+    <div
+      className="flex-1 flex items-center justify-center min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: "url('/studiophoto/studio (3).webp')" }}
     >
-      <h1 className="text-2xl font-semibold mb-6 text-center">
-        Sign In
-      </h1>
 
-      {authError && (
-        <Box
-          className="w-full flex px-3 items-center justify-start mb-4 py-1.5 rounded-md bg-amber-200"
+      <div className="max-w-md w-full p-8 rounded-md bg-white/5 backdrop-blur-2xl shadow-sm">
+        <h1 className="text-2xl font-semibold mb-6 text-center text-gray-900">
+          Sign In
+        </h1>
+
+        {authError && (
+          <Box
+            className="w-full flex px-3 items-center justify-start mb-4 py-1.5 rounded-md bg-amber-200"
+          >
+            <p className="text-red-600 text-sm text-center">
+              {authError}
+            </p>
+          </Box>
+        )}
+
+        <form
+          onSubmit={handleEmailLogin}
+          className="flex flex-col gap-4"
         >
-          <p className="text-red-600 text-sm text-center">
-            {authError}
-          </p>
-        </Box>
-      )}
+          <TextField
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            fullWidth
+            size="small"
+            value={form.email}
+            onChange={(e) => handleChange("email", e.target.value)}
+            error={!!fieldErrors.email}
+            helperText={fieldErrors.email}
+          />
 
-      <form
-        onSubmit={handleEmailLogin}
-        className="flex flex-col gap-4"
-      >
-        <TextField
-          label="Email"
-          type="email"
-          placeholder="Enter your email"
-          fullWidth
-          size="small"
-          value={form.email}
-          onChange={(e) => handleChange("email", e.target.value)}
-          error={!!fieldErrors.email}
-          helperText={fieldErrors.email}
-        />
+          <TextField
+            label="Password"
+            type="password"
+            placeholder="Enter your password"
+            fullWidth
+            size="small"
+            value={form.password}
+            onChange={(e) =>
+              handleChange("password", e.target.value)
+            }
+            error={!!fieldErrors.password}
+            helperText={fieldErrors.password}
+          />
 
-        <TextField
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          fullWidth
-          size="small"
-          value={form.password}
-          onChange={(e) =>
-            handleChange("password", e.target.value)
-          }
-          error={!!fieldErrors.password}
-          helperText={fieldErrors.password}
-        />
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={loading}
+          >
+            {loading ? <span className="flex items-center justify-center"><CircularProgress enableTrackSlot size={15} className="mr-2" />Signing in...</span> : "Sign In"}
+          </Button>
+        </form>
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={loading}
-        >
-          {loading ? <span className="flex items-center justify-center"><CircularProgress enableTrackSlot size={15} className="mr-2" />Signing in...</span> : "Sign In"}
-        </Button>
-      </form>
-
-      <p className="mt-6 text-center text-gray-600 text-sm">
-        Not a member yet?{" "}
-        <Link
-          href="/auth/register"
-          className="text-blue-600 font-medium"
-        >
-          Register
-        </Link>
-      </p>
-    </Box>
+        <p className="mt-6 text-center text-gray-600 text-sm">
+          Not a member yet?{" "}
+          <Link
+            href="/auth/register"
+            className="text-blue-600 font-medium"
+          >
+            Register
+          </Link>
+        </p>
+      </div>
+    </div >
   );
 }
