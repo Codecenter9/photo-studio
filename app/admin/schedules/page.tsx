@@ -1,0 +1,240 @@
+"use client";
+
+import {
+    Calendar,
+    CheckCircle,
+    Clock,
+    Edit,
+    Trash,
+} from "lucide-react";
+import EthiopianCalendar from "@/components/ui/EthiopianCalendar";
+import Button from "@mui/material/Button";
+import { useEffect, useState } from "react";
+import ScheduleForm from "./scheduleForm";
+import { Alert, CircularProgress, IconButton, Snackbar } from "@mui/material";
+import axios from "axios";
+import { IUser } from "@/types/models/user";
+import { ISchedule } from "@/types/models/Schedule";
+import { handleError } from "@/lib/error";
+import ClientDetail from "./components/clientDetail";
+
+const SchedulesPage = () => {
+    const [open, setOpen] = useState(false);
+    const [users, setUsers] = useState<IUser[]>([]);
+    const [schedules, setSchedules] = useState<ISchedule[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>("");
+
+    const [selectedScheduleId, setSelectedScheduleId] = useState("");
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get("/api/auth/user");
+            setUsers(response.data);
+        } catch (err) {
+            console.error("Fetch Users Error:", err);
+        }
+    };
+
+    const fetchSchedules = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get("/api/schedule");
+            setSchedules(response.data.schedules);
+        } catch (err: unknown) {
+            setError(handleError(err));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+        fetchSchedules();
+    }, []);
+
+    const formatDate = (date?: string | Date | null) => {
+        if (!date) return "-";
+        const d = new Date(date);
+        return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const selectedSchedule = schedules.find((schedule) => schedule._id === selectedScheduleId);
+
+    return (
+        <>
+            {
+                selectedScheduleId ? (
+                    <ClientDetail selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
+                ) : (
+                    <div className="flex flex-col gap-8">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold">Schedules</h1>
+                                <p className="text-sm text-gray-500">
+                                    Manage and organize your photo schedules.
+                                </p>
+                            </div >
+                        </div >
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                            <div className="col-span-2 flex flex-col gap-3">
+
+                                <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
+                                    <div className="flex justify-between items-center">
+                                        <h2 className="text-base text-gray-700 font-semibold">Photo Shots</h2>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() => setOpen(true)}
+                                        >
+                                            New Schedule
+                                        </Button>
+                                    </div>
+
+                                    {loading ? (
+                                        <div className="flex items-center justify-center gap-2 py-6">
+                                            <CircularProgress size={20} /> <span>Loading schedules...</span>
+                                        </div>
+                                    ) : error ? (
+                                        <Alert severity="error">{error}</Alert>
+                                    ) : schedules.length === 0 ? (
+                                        <p className="py-4 text-gray-500 text-center">No schedules found.</p>
+                                    ) : (
+                                        <div className="overflow-auto scrollbar-thin mt-3 rounded-md border border-gray-200">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="p-2 text-left">#</th>
+                                                        <th className="p-2 text-left">Client</th>
+                                                        <th className="p-2 text-left">Type</th>
+                                                        <th className="p-2 text-left">Date</th>
+                                                        <th className="p-2 text-left">Status</th>
+                                                        <th className="p-2 text-center">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {schedules.map((item, index) => (
+                                                        <tr key={item._id} className="hover:bg-gray-50 border-b border-gray-200">
+                                                            <td className="p-2">{index + 1}</td>
+                                                            <td className="p-2">
+                                                                <span
+                                                                    onClick={() => setSelectedScheduleId(item._id || "")}
+                                                                    className="text-blue-500 cursor-pointer"
+                                                                >
+                                                                    {(item.clientId as IUser)?.name || "Unknown"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-2">{item.scheduleType}</td>
+                                                            <td className="p-2">{formatDate(item.eventDate)}</td>
+                                                            <td className="p-2">
+                                                                <span
+                                                                    className={`px-3 py-1 rounded-sm text-xs font-semibold ${item.status === "Completed"
+                                                                        ? "bg-green-100 text-green-700"
+                                                                        : item.status === "Editing"
+                                                                            ? "bg-yellow-100 text-yellow-700"
+                                                                            : "bg-cyan-100 text-cyan-700"
+                                                                        }`}
+                                                                >
+                                                                    {item.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-2 text-center flex justify-center gap-2">
+                                                                <IconButton size="small" color="info">
+                                                                    <Edit size={14} />
+                                                                </IconButton>
+                                                                <IconButton size="small" color="error">
+                                                                    <Trash size={14} />
+                                                                </IconButton>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
+                                    <h2 className="text-base text-gray-700 font-semibold">Under Edits</h2>
+                                    <div className="mt-4">Coming Soon...</div>
+                                </div>
+
+                                <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
+                                    <h2 className="text-base text-gray-700 font-semibold">Completed</h2>
+                                    <div className="mt-4">Coming Soon...</div>
+                                </div>
+
+                            </div>
+
+                            <div className="flex flex-col gap-6">
+
+                                <div className="p-6 rounded border border-gray-300">
+                                    <h3 className="font-semibold text-purple-600 mb-4">
+                                        Calendar
+                                    </h3>
+                                    <EthiopianCalendar />
+                                </div>
+
+                                <div className="p-4 rounded border border-gray-300">
+                                    <h3 className="font-semibold text-purple-600 mb-4">
+                                        Recent Tasks
+                                    </h3>
+                                    <ul className="space-y-3 text-sm">
+                                        {schedules.slice(0, 5).map((task) => (
+                                            <li key={task._id} className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    {task.status === "Completed" ? (
+                                                        <CheckCircle size={16} className="text-green-500" />
+                                                    ) : (
+                                                        <Clock size={16} className="text-yellow-500" />
+                                                    )}
+                                                    {(task.clientId as IUser)?.name || "Unknown"} - {task.scheduleType}
+                                                </div>
+                                                <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                    <Calendar size={12} /> {formatDate(task.eventDate)}
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <ScheduleForm
+                            setOpen={setOpen}
+                            open={open}
+                            fetchUsers={fetchUsers}
+                            users={users}
+                            setSnackbarOpen={setSnackbarOpen}
+                            setSnackbarMessage={setSnackbarMessage}
+                        />
+
+                        {/* Snackbar */}
+                        <Snackbar
+                            open={snackbarOpen}
+                            autoHideDuration={4000}
+                            onClose={() => setSnackbarOpen(false)}
+                            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                        >
+                            <Alert
+                                onClose={() => setSnackbarOpen(false)}
+                                severity="success"
+                                sx={{ width: "100%" }}
+                            >
+                                {snackbarMessage}
+                            </Alert>
+                        </Snackbar>
+                    </div >
+                )}
+        </>
+    );
+};
+
+export default SchedulesPage;
