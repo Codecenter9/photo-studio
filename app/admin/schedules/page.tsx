@@ -33,6 +33,8 @@ const SchedulesPage = () => {
     const [snackbarMessage, setSnackbarMessage] = useState("");
 
     const { mode } = useCalendar();
+    const [scheduleDate, setScheduleDate] = useState<Date>(new Date());
+
 
     const fetchUsers = async () => {
         try {
@@ -68,7 +70,7 @@ const SchedulesPage = () => {
         <>
             {
                 selectedScheduleId ? (
-                    <ClientDetail schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
+                    <ClientDetail fetchSchedules={fetchSchedules} schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
                 ) : (
                     <div className="flex flex-col gap-8">
                         <div className="flex items-center justify-between">
@@ -98,7 +100,7 @@ const SchedulesPage = () => {
 
                                     {loading ? (
                                         <div className="flex items-center justify-center gap-2 py-6">
-                                            <CircularProgress size={18} /> <span>Loading schedules...</span>
+                                            <CircularProgress enableTrackSlot size={15} /> <span>Loading schedules...</span>
                                         </div>
                                     ) : error ? (
                                         <Alert severity="error">{error}</Alert>
@@ -177,7 +179,8 @@ const SchedulesPage = () => {
                                     <h3 className="font-semibold text-purple-600 mb-4">
                                         Calendar
                                     </h3>
-                                    <EthiopianCalendar />
+                                    <EthiopianCalendar value={scheduleDate}
+                                        onChange={(date) => setScheduleDate(date)} />
                                 </div>
 
                                 <div className="p-4 rounded border border-gray-300">

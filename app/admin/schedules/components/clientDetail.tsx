@@ -2,18 +2,51 @@ import { ISchedule } from '@/types/models/Schedule';
 import { IUser } from '@/types/models/user';
 import { Box } from '@mui/material';
 import { ArrowLeft, Check } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import { formatDate as formatCalendarDate } from "@/lib/calendar";
 import { useCalendar } from '@/context/CalendarContext';
-
+import ScheduleDialog from './editSchedule';
+import axios from 'axios';
 interface ClientDetailSectionProps {
     schedules: ISchedule[];
+    fetchSchedules: () => void;
     selectedSchedule?: ISchedule;
     setSelectedScheduleId?: React.Dispatch<React.SetStateAction<string>>;
 }
-const ClientDetail = ({ schedules, selectedSchedule, setSelectedScheduleId }: ClientDetailSectionProps) => {
+const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelectedScheduleId }: ClientDetailSectionProps) => {
 
     const { mode } = useCalendar();
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedDates, setSelectedDates] = useState<{
+        eventDate?: Date;
+        editingDate?: Date;
+        deliveryDate?: Date;
+    }>({});
+
+    const [currentEditingField, setCurrentEditingField] = useState<"eventDate" | "editingDate" | "deliveryDate" | null>(null);
+
+    const handleSaveDate = async (date: Date) => {
+        if (!selectedSchedule || !currentEditingField) return;
+
+        setIsSubmitting(true);
+
+        try {
+            await axios.put(`/api/schedule/${selectedSchedule._id}`, {
+                [currentEditingField]: date
+            });
+
+            setSelectedDates(prev => ({ ...prev, [currentEditingField]: date }));
+
+            fetchSchedules();
+        } catch {
+            console.error("Update schedule error:");
+            alert("Failed to update schedule: ");
+        } finally {
+            setCurrentEditingField(null);
+            setIsSubmitting(false);
+        }
+    };
 
     const getClientId = (client: any) =>
         typeof client === "object" && "_id" in client
@@ -26,12 +59,29 @@ const ClientDetail = ({ schedules, selectedSchedule, setSelectedScheduleId }: Cl
             getClientId(selectedSchedule?.clientId)
     );
 
-    const recentSchedule = populatedSchedules
-        .filter(s => s.eventDate)
-        .sort((a, b) =>
-            new Date(b.eventDate!).getTime() -
-            new Date(a.eventDate!).getTime()
-        )[0];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcomingSchedule = populatedSchedules.filter(
+        (s) =>
+            s.eventDate &&
+            new Date(s.eventDate) >= today &&
+            s.status !== "Completed"
+    );
+
+    const recentSchedule = upcomingSchedule.length > 0
+        ? upcomingSchedule.sort(
+            (a, b) => new Date(a.eventDate!).getTime() - new Date(b.eventDate!).getTime()
+        )[0]
+        : undefined;
+
+    let remainingDays: number | null = null;
+    if (recentSchedule?.eventDate) {
+        const diffMs = new Date(recentSchedule.eventDate).getTime() - Date.now();
+        remainingDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    }
+
+
 
     const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);
 
@@ -55,7 +105,7 @@ const ClientDetail = ({ schedules, selectedSchedule, setSelectedScheduleId }: Cl
                     </em>
                 </div>
             </div>
-            <div className="w-full flex gap-6">
+            <div className="w-full flex flex-col lg:flex-row gap-6">
                 <div className="flex flex-col flex-1 items-center gap-6 border border-gray-300 rounded-md p-6">
 
                     <div className="w-full flex items-center gap-1">
@@ -83,46 +133,86 @@ const ClientDetail = ({ schedules, selectedSchedule, setSelectedScheduleId }: Cl
                             <em>{(selectedSchedule?.clientId as IUser)?.email}</em>
                         </div>
                     </div>
-                    <div className="w-full flex flex-col gap-2 border border-gray-300 p-3 rounded-md">
-                        <span className="text-center text-normal font-medium font-serif">Recent Schedule</span>
-                        <ul className='w-full flex flex-col gap-1 items-center'>
-                            <li className='w-full flex items-center justify-between'>
-                                <div className="flex items-center gap-1">
-                                    <Check size={15} className='text-green-500' />
-                                    <span className="text-sm font-light">Type</span>
-                                </div>
-                                <span className="text-sm font-extralight bg-gray-100 rounded-md border border-gray-500 px-3 ">{recentSchedule.scheduleType?.toUpperCase()}</span>
-                            </li>
-                            <li className='w-full flex items-center justify-between'>
-                                <div className="flex items-center gap-1">
-                                    <Check size={15} className='text-green-500' />
-                                    <span className="text-sm font-light">Event Date</span>
-                                </div>
-                                <span className="text-sm font-extra-light">{formatDate(recentSchedule.eventDate)}</span>
-                            </li>
-                            <li className='w-full flex items-center justify-between'>
-                                <div className="flex items-center gap-1">
-                                    <Check size={15} className='text-green-500' />
-                                    <span className="text-sm font-light">Editing Date</span>
-                                </div>
-                                <span className="text-sm font-extra-light">{formatDate(recentSchedule.editingDate)}</span>
-                            </li>
-                            <li className='w-full flex items-center justify-between'>
-                                <div className="flex items-center gap-1">
-                                    <Check size={15} className='text-green-500' />
-                                    <span className="text-sm font-light">Delivery Date</span>
-                                </div>
-                                <span className="text-sm font-extra-light">{formatDate(recentSchedule.deliveryDate)}</span>
-                            </li>
-                            <li className='w-full flex items-center justify-between'>
-                                <div className="flex items-center gap-1">
-                                    <Check size={15} className='text-green-500' />
-                                    <span className="text-sm font-light">Status</span>
-                                </div>
-                                <span className="text-sm font-extralight bg-gray-100 rounded-md border border-gray-500 px-3 ">{recentSchedule.status}</span>
-                            </li>
-                        </ul>
-                    </div>
+                    {recentSchedule && (
+                        <div className="w-full flex flex-col gap-3 border border-gray-300 p-3 rounded-md">
+                            <div className="flex items-center justify-between">
+                                <p className="text-normal text-center flex gap-1 font-medium font-serif group">UpComming <span className='flex group-hover:hidden'>...</span> <span className='hidden group-hover:flex'>Schedule</span> </p>
+                                <span className='text-sm bg-cyan-100 text-cyan-700 px-3 rounded-md font-bold'>{remainingDays === 0 ? (
+                                    <span className="text-red-500">Today</span>
+                                ) : (
+                                    <div className="">
+                                        {remainingDays}  days left
+                                    </div>
+                                )}</span>
+                            </div>
+                            <ul className='w-full flex flex-col gap-2 items-center'>
+                                <li className='w-full flex items-center justify-between'>
+                                    <div className="flex items-center gap-1">
+                                        <Check size={15} className='text-green-500' />
+                                        <span className="text-sm font-light">Type</span>
+                                    </div>
+                                    <span className="text-sm font-extralight bg-gray-100 rounded-md border border-gray-500 px-3 ">{recentSchedule?.scheduleType?.toUpperCase()}</span>
+                                </li>
+                                <li className='w-full flex items-center justify-between'>
+                                    <div className="flex items-center gap-1">
+                                        <Check size={15} className='text-green-500' />
+                                        <span className="text-sm font-light">Event Date</span>
+                                    </div>
+                                    <span
+                                        className="text-sm font-extra-light cursor-pointer underline hover:text-blue-600"
+                                        onClick={() => setCurrentEditingField("eventDate")}
+                                    >
+                                        {selectedDates.eventDate
+                                            ? formatDate(selectedDates.eventDate)
+                                            : recentSchedule?.eventDate
+                                                ? formatDate(recentSchedule.eventDate)
+                                                : "Set Date"}
+                                    </span>
+                                </li>
+                                <li className='w-full flex items-center justify-between'>
+                                    <div className="flex items-center gap-1">
+                                        <Check size={15} className='text-green-500' />
+                                        <span className="text-sm font-light">Editing Date</span>
+                                    </div>
+                                    <span
+                                        className="text-sm font-extra-light cursor-pointer underline hover:text-blue-600"
+                                        onClick={() => setCurrentEditingField("editingDate")}
+                                    >
+                                        {selectedDates.editingDate
+                                            ? formatDate(selectedDates.editingDate)
+                                            : recentSchedule?.editingDate
+                                                ? formatDate(recentSchedule.editingDate)
+                                                : "Set Date"}
+                                    </span>
+                                </li>
+                                <li className='w-full flex items-center justify-between'>
+                                    <div className="flex items-center gap-1">
+                                        <Check size={15} className='text-green-500' />
+                                        <span className="text-sm font-light">Delivery Date</span>
+                                    </div>
+                                    <span
+                                        className="text-sm font-extra-light cursor-pointer underline hover:text-blue-600"
+                                        onClick={() => setCurrentEditingField("deliveryDate")}
+                                    >
+                                        {selectedDates.deliveryDate
+                                            ? formatDate(selectedDates.deliveryDate)
+                                            : recentSchedule?.deliveryDate
+                                                ? formatDate(recentSchedule.deliveryDate)
+                                                : "Set Date"}
+                                    </span>
+                                </li>
+                                <li className="w-full flex flex-col mt-3 gap-2">
+                                    <hr className='w-full text-gray-300 h-1' />
+                                    <span className='w-full flex items-center justify-between'>
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-sm font-light">Status</span>
+                                        </div>
+                                        <span className="text-sm font-extralight bg-cyan-100 text-cyan-700 rounded-md border border-gray-500 px-3 ">{recentSchedule?.status}</span>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                 </div>
                 <div className="flex flex-col flex-2 h-100 border border-gray-300 rounded-md">
 
@@ -171,6 +261,27 @@ const ClientDetail = ({ schedules, selectedSchedule, setSelectedScheduleId }: Cl
                     </div>
                 </div>
             </div>
+
+            {currentEditingField && selectedSchedule && (
+                <ScheduleDialog
+                    open={true}
+                    setOpen={() => setCurrentEditingField(null)}
+                    title={`Edit ${currentEditingField.replace("Date", " Date")}`}
+                    value={
+                        selectedDates[currentEditingField] ??
+                        recentSchedule?.[currentEditingField] ??
+                        new Date()
+                    }
+                    onChange={(date) =>
+                        setSelectedDates(prev => ({
+                            ...prev,
+                            [currentEditingField]: date
+                        }))
+                    }
+                    onSave={handleSaveDate}
+                    isSubmitting={isSubmitting}
+                />
+            )}
         </div>
     )
 }

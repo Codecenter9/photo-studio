@@ -19,18 +19,20 @@ const ETH_DAYS = ["እሑድ", "ሰኞ", "ማክሰኞ", "ረቡዕ", "ሐሙስ
 
 interface CalendarSwitcherProps {
     className?: string;
+    value: Date;
+    onChange: (date: Date) => void;
 }
 
-export default function CalendarSwitcher({ className }: CalendarSwitcherProps) {
+export default function CalendarSwitcher({ className, value, onChange }: CalendarSwitcherProps) {
     const { mode, setMode } = useCalendar();
-    const [gregorianDate, setGregorianDate] = useState<Date>(new Date());
     const [showMonthYearPicker, setShowMonthYearPicker] = useState(false);
 
-    const getEthiopianDate = (date: Date) => {
+    const getEthiopianDate = (date?: Date | null) => {
+        const d = date ? new Date(date) : new Date(); 
         const [year, month, day] = toEthiopian(
-            date.getFullYear(),
-            date.getMonth() + 1,
-            date.getDate()
+            d.getFullYear(),
+            d.getMonth() + 1,
+            d.getDate()
         );
         return { year, month, day };
     };
@@ -47,29 +49,25 @@ export default function CalendarSwitcher({ className }: CalendarSwitcherProps) {
         return diffDays;
     };
 
-    const handleGregorianChange: CalendarProps['onChange'] = (value) => {
-        if (!value) return;
-
-        if (value instanceof Date) {
-            setGregorianDate(value);
-        } else if (Array.isArray(value)) {
-            const firstDate = value.find(v => v instanceof Date) as Date | undefined;
-            if (firstDate) setGregorianDate(firstDate);
-        }
+    const handleGregorianChange: CalendarProps['onChange'] = (val) => {
+        let newDate: Date | undefined;
+        if (val instanceof Date) newDate = val;
+        else if (Array.isArray(val)) newDate = val.find(v => v instanceof Date) as Date;
+        if (newDate) onChange(newDate);
     };
 
     const handleEthiopianDayClick = (day: number) => {
-        const { year, month } = getEthiopianDate(gregorianDate);
+        const { year, month } = getEthiopianDate(value);
         try {
             const [gy, gm, gd] = toGregorian(year, month, day);
-            setGregorianDate(new Date(gy, gm - 1, gd));
+            onChange(new Date(gy, gm - 1, gd));
         } catch (e) {
             console.error("Invalid Ethiopian date", e);
         }
     };
 
     const goToPrevEthiopianMonth = () => {
-        const { year, month, day } = getEthiopianDate(gregorianDate);
+        const { year, month, day } = getEthiopianDate(value);
         let newYear = year;
         let newMonth = month - 1;
         if (newMonth < 1) {
@@ -80,14 +78,14 @@ export default function CalendarSwitcher({ className }: CalendarSwitcherProps) {
         const newDay = Math.min(day, daysInNewMonth);
         try {
             const [gy, gm, gd] = toGregorian(newYear, newMonth, newDay);
-            setGregorianDate(new Date(gy, gm - 1, gd));
+            onChange(new Date(gy, gm - 1, gd));
         } catch (e) {
             console.error("Invalid date", e);
         }
     };
 
     const goToNextEthiopianMonth = () => {
-        const { year, month, day } = getEthiopianDate(gregorianDate);
+        const { year, month, day } = getEthiopianDate(value);
         let newYear = year;
         let newMonth = month + 1;
         if (newMonth > 13) {
@@ -98,26 +96,26 @@ export default function CalendarSwitcher({ className }: CalendarSwitcherProps) {
         const newDay = Math.min(day, daysInNewMonth);
         try {
             const [gy, gm, gd] = toGregorian(newYear, newMonth, newDay);
-            setGregorianDate(new Date(gy, gm - 1, gd));
+            onChange(new Date(gy, gm - 1, gd));
         } catch (e) {
             console.error("Invalid date", e);
         }
     };
 
     const handleEthiopianMonthYearChange = (newYear: number, newMonth: number) => {
-        const { day } = getEthiopianDate(gregorianDate);
+        const { day } = getEthiopianDate(value);
         const daysInNewMonth = getDaysInEthiopianMonth(newYear, newMonth);
         const newDay = Math.min(day, daysInNewMonth);
         try {
             const [gy, gm, gd] = toGregorian(newYear, newMonth, newDay);
-            setGregorianDate(new Date(gy, gm - 1, gd));
+            onChange(new Date(gy, gm - 1, gd));
             setShowMonthYearPicker(false);
         } catch (e) {
             console.error("Invalid date", e);
         }
     };
 
-    const { year: ethYear, month: ethMonth, day: ethDay } = getEthiopianDate(gregorianDate);
+    const { year: ethYear, month: ethMonth, day: ethDay } = getEthiopianDate(value);
     const daysInMonth = getDaysInEthiopianMonth(ethYear, ethMonth);
 
     const [firstGy, firstGm, firstGd] = toGregorian(ethYear, ethMonth, 1);
@@ -144,7 +142,7 @@ export default function CalendarSwitcher({ className }: CalendarSwitcherProps) {
             </div>
 
             {mode === "gregorian" && (
-                <Calendar value={gregorianDate} onChange={handleGregorianChange} />
+                <Calendar value={value} onChange={handleGregorianChange} />
             )}
 
             {mode === "ethiopian" && (
