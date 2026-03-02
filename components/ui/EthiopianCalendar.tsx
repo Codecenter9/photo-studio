@@ -7,6 +7,7 @@ import { toEthiopian, toGregorian } from "ethiopian-date";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Switch from '@mui/material/Switch';
+import { useCalendar } from "@/context/CalendarContext";
 
 const ETH_MONTHS = [
     "መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ",
@@ -21,7 +22,7 @@ interface CalendarSwitcherProps {
 }
 
 export default function CalendarSwitcher({ className }: CalendarSwitcherProps) {
-    const [mode, setMode] = useState<"gregorian" | "ethiopian">("gregorian");
+    const { mode, setMode } = useCalendar();
     const [gregorianDate, setGregorianDate] = useState<Date>(new Date());
     const [showMonthYearPicker, setShowMonthYearPicker] = useState(false);
 

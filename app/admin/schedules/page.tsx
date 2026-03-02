@@ -17,6 +17,8 @@ import { IUser } from "@/types/models/user";
 import { ISchedule } from "@/types/models/Schedule";
 import { handleError } from "@/lib/error";
 import ClientDetail from "./components/clientDetail";
+import { useCalendar } from "@/context/CalendarContext";
+import { formatDate as formatCalendarDate } from "@/lib/calendar";
 
 const SchedulesPage = () => {
     const [open, setOpen] = useState(false);
@@ -29,6 +31,8 @@ const SchedulesPage = () => {
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+
+    const { mode } = useCalendar();
 
     const fetchUsers = async () => {
         try {
@@ -56,11 +60,7 @@ const SchedulesPage = () => {
         fetchSchedules();
     }, []);
 
-    const formatDate = (date?: string | Date | null) => {
-        if (!date) return "-";
-        const d = new Date(date);
-        return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
+    const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);
 
     const selectedSchedule = schedules.find((schedule) => schedule._id === selectedScheduleId);
 
@@ -68,7 +68,7 @@ const SchedulesPage = () => {
         <>
             {
                 selectedScheduleId ? (
-                    <ClientDetail selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
+                    <ClientDetail schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
                 ) : (
                     <div className="flex flex-col gap-8">
                         <div className="flex items-center justify-between">
@@ -98,7 +98,7 @@ const SchedulesPage = () => {
 
                                     {loading ? (
                                         <div className="flex items-center justify-center gap-2 py-6">
-                                            <CircularProgress size={20} /> <span>Loading schedules...</span>
+                                            <CircularProgress size={18} /> <span>Loading schedules...</span>
                                         </div>
                                     ) : error ? (
                                         <Alert severity="error">{error}</Alert>
@@ -210,13 +210,12 @@ const SchedulesPage = () => {
                         <ScheduleForm
                             setOpen={setOpen}
                             open={open}
-                            fetchUsers={fetchUsers}
+                            fetchSchedules={fetchSchedules}
                             users={users}
                             setSnackbarOpen={setSnackbarOpen}
                             setSnackbarMessage={setSnackbarMessage}
                         />
 
-                        {/* Snackbar */}
                         <Snackbar
                             open={snackbarOpen}
                             autoHideDuration={4000}

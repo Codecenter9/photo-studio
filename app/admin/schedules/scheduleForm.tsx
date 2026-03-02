@@ -23,7 +23,7 @@ interface UserFormProps {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setSnackbarMessage: React.Dispatch<React.SetStateAction<string>>;
     setSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    fetchUsers: () => void;
+    fetchSchedules: () => void;
 }
 
 interface FieldErrors {
@@ -38,7 +38,7 @@ const ScheduleForm = ({
     open,
     setOpen,
     users,
-    fetchUsers,
+    fetchSchedules,
     setSnackbarOpen,
     setSnackbarMessage,
 }: UserFormProps) => {
@@ -160,7 +160,7 @@ const ScheduleForm = ({
                 setSnackbarOpen(true);
                 setOpen(false);
                 resetForm();
-                fetchUsers();
+                fetchSchedules();
             }
         } catch (error: any) {
             console.log("error:", error)
@@ -190,12 +190,12 @@ const ScheduleForm = ({
         >
             <form
                 onSubmit={handleSubmit}
-                className="w-sm lg:w-md flex flex-col gap-6 mt-3"
+                className="w-max lg:w-md flex flex-col gap-6 mt-3"
             >
 
                 <div className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-all duration-300 rounded-md px-3 py-0">
                     <Typography fontSize={14} fontWeight={500}>
-                        Use Existing Client
+                        Existing Client
                     </Typography>
 
                     <FormControlLabel
