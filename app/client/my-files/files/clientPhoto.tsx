@@ -163,7 +163,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
 
     return (
         <div className="w-full flex flex-col items-center gap-8 overflow-hidden">
-            <div className="w-full flex items-center justify-between gap-2">
+            <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <span
                         onClick={() => setSelectedFolderId && setSelectedFolderId(null)}

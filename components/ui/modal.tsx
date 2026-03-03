@@ -12,7 +12,7 @@ interface ReusableDialogProps {
     open: boolean;
     title?: string;
     children: React.ReactNode;
-    scroll?: DialogProps["scroll"]; // 'paper' | 'body'
+    scroll?: DialogProps["scroll"]; 
     onClose: () => void;
     onSave?: () => void;
     closeLabel?: string;

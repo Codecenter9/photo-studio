@@ -25,7 +25,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
     };
 
     const openFullscreen = (photo: IFile) => {
-        const container = document.getElementById(`media-${photo._id}`);
+        const container = document.getElementById(`media-${photo.publicId}`);
         if (!container) return;
 
         const mediaElement = container.querySelector('img, video');

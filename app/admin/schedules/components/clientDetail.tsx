@@ -66,7 +66,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
         (s) =>
             s.eventDate &&
             new Date(s.eventDate) >= today &&
-            s.status !== "Completed"
+            s.status !== "completed"
     );
 
     const recentSchedule = upcomingSchedule.length > 0
@@ -151,7 +151,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                                         <Check size={15} className='text-green-500' />
                                         <span className="text-sm font-light">Type</span>
                                     </div>
-                                    <span className="text-sm font-extralight bg-gray-100 rounded-md border border-gray-500 px-3 ">{recentSchedule?.scheduleType?.toUpperCase()}</span>
+                                    <span className="text-xs font-extralight bg-gray-100 rounded-md border border-gray-500 px-3 ">{recentSchedule?.scheduleType?.toUpperCase()}</span>
                                 </li>
                                 <li className='w-full flex items-center justify-between'>
                                     <div className="flex items-center gap-1">
@@ -159,7 +159,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                                         <span className="text-sm font-light">Event Date</span>
                                     </div>
                                     <span
-                                        className="text-sm font-extra-light cursor-pointer underline hover:text-blue-600"
+                                        className="text-xs font-extra-light cursor-pointer underline hover:text-blue-600"
                                         onClick={() => setCurrentEditingField("eventDate")}
                                     >
                                         {selectedDates.eventDate
@@ -175,7 +175,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                                         <span className="text-sm font-light">Editing Date</span>
                                     </div>
                                     <span
-                                        className="text-sm font-extra-light cursor-pointer underline hover:text-blue-600"
+                                        className="text-xs font-extra-light cursor-pointer underline hover:text-blue-600"
                                         onClick={() => setCurrentEditingField("editingDate")}
                                     >
                                         {selectedDates.editingDate
@@ -191,7 +191,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                                         <span className="text-sm font-light">Delivery Date</span>
                                     </div>
                                     <span
-                                        className="text-sm font-extra-light cursor-pointer underline hover:text-blue-600"
+                                        className="text-xs font-extra-light cursor-pointer underline hover:text-blue-600"
                                         onClick={() => setCurrentEditingField("deliveryDate")}
                                     >
                                         {selectedDates.deliveryDate
@@ -201,13 +201,29 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                                                 : "Set Date"}
                                     </span>
                                 </li>
+                                {recentSchedule?.notes && (
+                                    <li className='w-full flex flex-col items-center bg-gray-100 border border-gray-200 rounded-md p-3 mt-3 justify-between'>
+                                        <span className="text-base font-light font-serif underline mb-3">Additional Notes</span>
+                                        <span className="text-sm text-amber-500 font-extralight font-serif">{recentSchedule?.notes}</span>
+                                    </li>
+                                )}
                                 <li className="w-full flex flex-col mt-3 gap-2">
                                     <hr className='w-full text-gray-300 h-1' />
                                     <span className='w-full flex items-center justify-between'>
                                         <div className="flex items-center gap-1">
                                             <span className="text-sm font-light">Status</span>
                                         </div>
-                                        <span className="text-sm font-extralight bg-cyan-100 text-cyan-700 rounded-md border border-gray-500 px-3 ">{recentSchedule?.status}</span>
+                                        <span
+                                            className={`px-3 py-1 rounded-sm text-xs font-extralight capitalize ${recentSchedule?.status === "completed"
+                                                ? "bg-green-100 text-green-700"
+                                                : recentSchedule?.status === "editing"
+                                                    ? "bg-yellow-100 text-yellow-700"
+                                                    : recentSchedule?.status === "cancelled"
+                                                        ? "bg-red-100 text-red-700"
+                                                        : "bg-cyan-100 text-cyan-700"
+                                                }`}
+                                        >
+                                            {recentSchedule?.status}</span>
                                     </span>
                                 </li>
                             </ul>

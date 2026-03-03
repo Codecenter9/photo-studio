@@ -32,11 +32,10 @@ const scheduleSchema = new Schema(
     status: {
       type: String,
       enum: [
-        "Booked",
-        "Editing",
-        "Completed",
-        "Delivered",
-        "Cancelled",
+        "booked",
+        "editing",
+        "completed",
+        "cancelled",
       ],
       default: "Booked",
     },
