@@ -264,7 +264,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <span className="font-medium text-gray-600">Status</span>
-                                            <span className="text-gray-800 text-sm bg-gray-100 rounded-md border border-gray-500 px-3 ">{schedule.status}</span>
+                                            <span className="text-gray-800 text-sm bg-cyan-100 rounded-md px-3 capitalize">{schedule.status}</span>
 
                                         </div>
                                     </div>

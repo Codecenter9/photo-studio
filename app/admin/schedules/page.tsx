@@ -20,9 +20,14 @@ import ClientDetail from "./components/clientDetail";
 import { useCalendar } from "@/context/CalendarContext";
 import { formatDate as formatCalendarDate } from "@/lib/calendar";
 import Input from "@/components/ui/input";
+import DeleteModal from "@/components/ui/deleteModal";
 
 const SchedulesPage = () => {
     const [open, setOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const [users, setUsers] = useState<IUser[]>([]);
     const [schedules, setSchedules] = useState<ISchedule[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -71,6 +76,24 @@ const SchedulesPage = () => {
         fetchSchedules();
     }, []);
 
+    const handleDeleteSchedule = async (id: string) => {
+        setIsDeleting(true);
+        try {
+            await axios.delete(`/api/schedule/${id}`);
+
+            setDeleteModalOpen(false);
+            setScheduleToDelete(null);
+            setSnackbarMessage("Schedule deleted successfully");
+            setSnackbarOpen(true);
+            fetchSchedules();
+        } catch (err) {
+            console.error("Delete failed", err);
+            setSnackbarMessage("Failed to delete schedule");
+        } finally {
+            setIsDeleting(false);
+        }
+    }
+
     const filteredSchedules = schedules.filter((schedule) => {
         const clientName =
             (schedule.clientId as IUser)?.name?.toLowerCase() || "";
@@ -94,6 +117,14 @@ const SchedulesPage = () => {
         return matchesName && matchesDate;
     });
 
+    const upcommingSchedules = schedules.filter(
+        (schedule) => schedule.status && !["completed", "delivered"].includes(schedule.status)
+    );
+
+    const completedSchedules = filteredSchedules.filter(
+        (schedule) => schedule.status && ["completed", "delivered"].includes(schedule.status)
+    );
+
     const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);
 
     const selectedSchedule = schedules.find((schedule) => schedule._id === selectedScheduleId);
@@ -104,7 +135,10 @@ const SchedulesPage = () => {
                 selectedSchedule ? (
                     <ClientDetail fetchSchedules={fetchSchedules} schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
                 ) : (
-                    <div className="flex flex-col gap-8">
+                    <div className="relative flex flex-col gap-8">
+                        {deleteModalOpen && (
+                            <div className="fixed inset-0 bg-black/40 z-40"></div>
+                        )}
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold">Schedules</h1>
@@ -120,7 +154,7 @@ const SchedulesPage = () => {
 
                                 <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
                                     <div className="flex justify-between items-center">
-                                        <h2 className="text-base text-gray-700 font-semibold">Photo Shots</h2>
+                                        <h2 className="text-base text-gray-700 font-semibold">UpComming Schedules</h2>
                                         <Button
                                             size="small"
                                             variant="outlined"
@@ -129,32 +163,14 @@ const SchedulesPage = () => {
                                             New Schedule
                                         </Button>
                                     </div>
-                                    <div className="flex justify-between items-center gap-3">
-                                        <Input
-                                            name="search"
-                                            placeholder="Search by names..."
-                                            value={searchInputs}
-                                            onChange={(e) => setSearchInputs(e.target.value)}
-                                            className="w-full lg:w-2/3"
-                                        />
-                                        <Button
-                                            size="small"
-                                            variant="outlined"
-                                            color="error"
-                                            onClick={handleClearFilter}
-                                            className="w-max lg:w-1/3"
-                                        >
-                                            Clear <span className="hidden lg:flex ml-2">Filters</span>
-                                        </Button>
-                                    </div>
 
                                     {loading ? (
                                         <div className="flex items-center justify-center gap-2 py-6">
-                                            <CircularProgress enableTrackSlot size={15} /> <span>Loading schedules...</span>
+                                            <CircularProgress enableTrackSlot size={15}/> <span>Loading schedules...</span>
                                         </div>
                                     ) : error ? (
                                         <Alert severity="error">{error}</Alert>
-                                    ) : filteredSchedules.length === 0 ? (
+                                    ) : upcommingSchedules.length === 0 ? (
                                         <p className="py-4 text-gray-500 text-center">No schedules found.</p>
                                     ) : (
                                         <div className="overflow-auto scrollbar-thin rounded-md border border-gray-200">
@@ -170,7 +186,7 @@ const SchedulesPage = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {filteredSchedules.map((item, index) => (
+                                                    {upcommingSchedules.map((item, index) => (
                                                         <tr key={item._id} className="hover:bg-gray-100 border-b border-gray-200 cursor-pointer">
                                                             <td className="p-2">{index + 1}</td>
                                                             <td onClick={() => setSelectedScheduleId(item._id || "")} className="p-2">
@@ -201,7 +217,14 @@ const SchedulesPage = () => {
                                                                 )} size="small" color="info">
                                                                     <Edit size={14} />
                                                                 </IconButton>
-                                                                <IconButton size="small" color="error">
+                                                                <IconButton
+                                                                    onClick={() => {
+                                                                        setScheduleToDelete(item._id);
+                                                                        setDeleteModalOpen(true);
+                                                                    }}
+                                                                    size="small"
+                                                                    color="error"
+                                                                >
                                                                     <Trash size={14} />
                                                                 </IconButton>
                                                             </td>
@@ -214,13 +237,87 @@ const SchedulesPage = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
-                                    <h2 className="text-base text-gray-700 font-semibold">Under Edits</h2>
-                                    <div className="mt-4">Coming Soon...</div>
-                                </div>
+                                    <h2 className="text-base text-gray-700 font-semibold">Completed Schedules</h2>
+                                    <div className="flex justify-between items-center gap-3">
+                                        <Input
+                                            name="search"
+                                            placeholder="Search by names..."
+                                            value={searchInputs}
+                                            onChange={(e) => setSearchInputs(e.target.value)}
+                                            className="w-full lg:w-2/3"
+                                        />
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            color="error"
+                                            onClick={handleClearFilter}
+                                            className="w-max lg:w-1/3"
+                                        >
+                                            Clear <span className="hidden lg:flex ml-2">Filters</span>
+                                        </Button>
+                                    </div>
 
-                                <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
-                                    <h2 className="text-base text-gray-700 font-semibold">Completed</h2>
-                                    <div className="mt-4">Coming Soon...</div>
+                                    {loading ? (
+                                        <div className="flex items-center justify-center gap-2 py-6">
+                                            <CircularProgress enableTrackSlot size={15} /> <span>Loading schedules...</span>
+                                        </div>
+                                    ) : error ? (
+                                        <Alert severity="error">{error}</Alert>
+                                    ) : completedSchedules.length === 0 ? (
+                                        <p className="py-4 text-gray-500 text-center">No schedules found.</p>
+                                    ) : (
+                                        <div className="overflow-auto scrollbar-thin rounded-md border border-gray-200">
+
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-100">
+                                                    <tr>
+                                                        <th className="p-2 text-left">#</th>
+                                                        <th className="p-2 text-left">Client</th>
+                                                        <th className="p-2 text-left">Type</th>
+                                                        <th className="p-2 text-left">Date</th>
+                                                        <th className="p-2 text-left">Status</th>
+                                                        <th className="p-2 text-center">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {completedSchedules.map((item, index) => (
+                                                        <tr key={item._id} className="hover:bg-gray-100 border-b border-gray-200 cursor-pointer">
+                                                            <td className="p-2">{index + 1}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id || "")} className="p-2">
+                                                                <span className="text-blue-500 cursor-pointer">
+                                                                    {(item.clientId as IUser)?.name || "Unknown"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-2">{item.scheduleType}</td>
+                                                            <td className="p-2">{formatDate(item.eventDate)}</td>
+                                                            <td className="p-2">
+                                                                <span
+                                                                    className={`px-3 py-1 rounded-sm text-xs font-semibold capitalize ${item.status === "completed"
+                                                                        ? "bg-green-100 text-green-700"
+                                                                        : item.status === "editing"
+                                                                            ? "bg-yellow-100 text-yellow-700"
+                                                                            : item.status === "cancelled"
+                                                                                ? "bg-red-100 text-red-700"
+                                                                                : "bg-cyan-100 text-cyan-700"
+                                                                        }`}
+                                                                >
+                                                                    {item.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-2 text-center flex justify-center gap-2">
+                                                                <IconButton onClick={() => (
+                                                                    setOpen(true),
+                                                                    setEditingScheduleId(item._id)
+                                                                )} size="small" color="info">
+                                                                    <Edit size={14} />
+                                                                </IconButton>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
                                 </div>
 
                             </div>
@@ -293,7 +390,23 @@ const SchedulesPage = () => {
                                 {snackbarMessage}
                             </Alert>
                         </Snackbar>
-                    </div >
+
+                        <DeleteModal
+                            isOpen={deleteModalOpen}
+                            title="Delete Schedule"
+                            description="Are you sure you want to delete this schedule? This action cannot be undone."
+                            onClose={() => {
+                                setDeleteModalOpen(false);
+                                setScheduleToDelete(null);
+                            }}
+                            onConfirm={() => {
+                                if (scheduleToDelete) {
+                                    handleDeleteSchedule(scheduleToDelete);
+                                }
+                            }}
+                            confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
+                        />
+                    </div>
                 )}
         </>
     );

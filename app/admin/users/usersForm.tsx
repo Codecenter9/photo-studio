@@ -116,7 +116,7 @@ const UsersForm = ({ open, setOpen, fetchUsers }: UserFormProps) => {
                     : "Save"
                 }
             >
-                <div className='flex w-2xl flex-col gap-3'>
+                <div className='flex w-full lg:w-2xl flex-col gap-3'>
                     {Object.keys(fieldErrors).length > 0 && (
                         <div className="mb-4 p-2 rounded-md bg-red-100">
                             <span className="text-red-600 text-sm text-start">

@@ -55,7 +55,7 @@ const Users = () => {
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-hidden">
                             {loading ?
-                                (<span className="flex items-center justify-center gap-1"><CircularProgress enableTrackSlot size={15} /><p>Loading users...</p></span>)
+                                (<span className="flex items-center justify-center gap-1"><CircularProgress enableTrackSlot size={15} /><p>Loading admins...</p></span>)
                                 :
                                 (<div className="overflow-auto scrollbar-thin border border-gray-300 rounded-md p-3">
                                     <span className="text-base text-center font-light font-serif">Admins</span>
@@ -93,7 +93,7 @@ const Users = () => {
                                 </div>)
                             }
                             {loading ?
-                                (<span className="flex items-center justify-center gap-1"><CircularProgress enableTrackSlot size={15} /><p>Loading users...</p></span>)
+                                (<span className="flex items-center justify-center gap-1"><CircularProgress enableTrackSlot size={15} /><p>Loading clients...</p></span>)
                                 :
                                 (<div className="overflow-auto scrollbar-thin border border-gray-300 rounded-md p-3">
                                     <span className="w-full text-base text-center font-light font-serif">Clients</span>

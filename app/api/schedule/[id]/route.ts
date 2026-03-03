@@ -32,3 +32,39 @@ export async function PUT(
     );
   }
 }
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> } 
+) {
+  await dbConnection();
+
+  const { id } =await params;
+
+  if (!id) {
+    return NextResponse.json(
+      { error: "Missing schedule ID" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const deletedSchedule = await Schedule.findByIdAndDelete(id);
+
+    if (!deletedSchedule) {
+      return NextResponse.json(
+        { error: "Schedule not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, schedule: deletedSchedule });
+  } catch (error) {
+    console.error("Schedule Delete Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

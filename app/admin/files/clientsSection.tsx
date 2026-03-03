@@ -9,6 +9,7 @@ import {
     SelectChangeEvent,
     CircularProgress
 } from '@mui/material';
+import { useState } from 'react';
 
 
 interface ClientSectionProps {
@@ -27,6 +28,14 @@ const ClientsSection = ({
     setSelectedClientId
 }: ClientSectionProps) => {
 
+    const [searchInputs, setSearchInputs] = useState("");
+
+    const filteredClients = users.filter((client) => {
+        const clientName = client?.name.toLowerCase() || "";
+        return searchInputs
+            ? clientName.includes(searchInputs.toLowerCase())
+            : true;
+    });
 
     const handleCheckboxChange = (clientId: string) => {
         setSelectedClientId(prev =>
@@ -43,7 +52,12 @@ const ClientsSection = ({
         <div className="flex flex-col h-full p-3">
 
             <div className="hidden sm:block mb-4">
-                <Input placeholder="Search clients" fullWidth />
+                <Input
+                    placeholder="Search clients"
+                    fullWidth
+                    value={searchInputs}
+                    onChange={(e) => setSearchInputs(e.target.value)}
+                />
             </div>
 
             {error ? (
@@ -59,7 +73,7 @@ const ClientsSection = ({
                         </span>
                     ) : (
                         <div className="flex flex-col gap-2">
-                            {users.map((client) => (
+                            {filteredClients.map((client) => (
                                 <FormGroup
                                     key={client._id}
                                     className="w-full border-b border-gray-200 hover:bg-gray-100 rounded-md transition-all cursor-pointer px-2"
