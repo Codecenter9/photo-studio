@@ -4,13 +4,15 @@ import { Button, Checkbox, IconButton, Typography } from "@mui/material";
 import { ArrowLeft, Download, Share2, Trash2 } from "lucide-react";
 import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
 import 'next-cloudinary/dist/cld-video-player.css';
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IFile } from "@/types/models/File";
 import axios from "axios";
 import { IFolder } from "@/types/models/folder";
 import { IUser } from "@/types/models/user";
 import DisplayFile from "./displayFile";
 import { handleError } from "@/lib/error";
+import { formatDate } from "@/lib/calendar";
+import { useCalendar } from "@/context/CalendarContext";
 
 interface PhotoSectionProps {
     selectedClient?: IUser;
@@ -30,16 +32,48 @@ const PhotoSection = ({
     const [error, setError] = useState<string>("");
     const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
 
+    const { mode } = useCalendar();
     const selectedFolderId = selectedFolder?._id || null;
 
     const selectedClientId = selectedClient?._id || null;
 
     const [activeTab, setActiveTab] = useState("UnSelected");
 
-    const Tabs = [
+    const folderStatus = selectedFolder?.status;
+
+    const UnEditedTabs = [
         { label: "UnSelected Files", key: "UnSelected" },
         { label: "Selected Files", key: "Selected" },
     ];
+
+    const EditedTabs = useMemo(() => {
+        if (!photos.length) return [];
+
+        const grouped: Record<string, string> = {};
+
+        photos.forEach((photo) => {
+            const isoDate = new Date(photo.createdAt)
+                .toISOString()
+                .split("T")[0];
+
+            if (!grouped[isoDate]) {
+                grouped[isoDate] = formatDate(photo.createdAt, mode);
+            }
+        });
+
+        return Object.entries(grouped)
+            .sort((a, b) => (a[0] > b[0] ? -1 : 1))
+            .map(([isoDate, label]) => ({
+                key: isoDate,
+                label: selectedFolder?.name.slice(0, 7) + " - " + label,
+            }));
+    }, [photos, mode, selectedFolder]);
+
+    useEffect(() => {
+        if (folderStatus !== "UnEdited" && EditedTabs.length > 0) {
+            setActiveTab(EditedTabs[0].key);
+        }
+    }, [EditedTabs, folderStatus]);
 
     const fetchPhotos = useCallback(async () => {
         if (!selectedFolderId || !selectedClientId) return;
@@ -135,13 +169,24 @@ const PhotoSection = ({
         }
     };
 
-    const folderStatus = selectedFolder?.status;
 
     const selectStatus = folderStatus === "UnEdited" ? "UnSelected" : "Approved";
 
-    const filteredPhotos = photos.filter(photo => photo.selectionStatus === activeTab);
+    const filteredPhotos = useMemo(() => {
+        if (folderStatus === "UnEdited") {
+            return photos.filter(photo => photo.selectionStatus === activeTab);
+        }
+        return photos.filter(photo => {
+            const isoDate = new Date(photo.createdAt)
+                .toISOString()
+                .split("T")[0];
 
-    const visiblePhotos = folderStatus === "UnEdited" ? filteredPhotos : photos;
+            return isoDate === activeTab;
+        });
+
+    }, [photos, activeTab, folderStatus]);
+
+    const visiblePhotos = filteredPhotos;
 
     return (
         <div className="w-full flex flex-col items-center gap-8 overflow-hidden">
@@ -251,13 +296,33 @@ const PhotoSection = ({
             {folderStatus === "UnEdited" && (
                 <div className="w-full flex flex-col items-center justify-start gap-5">
                     <div className="w-full flex items-center gap-2">
-                        {Tabs.map((tab) => (
+                        {UnEditedTabs.map((tab) => (
                             <Button
                                 key={tab.key}
                                 onClick={() => (
                                     setActiveTab(tab.key),
                                     setSelectedPhotos([])
                                 )}
+                                variant={activeTab === tab.key ? "contained" : "outlined"}
+                                size="small"
+                            >
+                                {tab.label}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {folderStatus == "Edited" && (
+                <div className="w-full flex flex-col items-center justify-start gap-5">
+                    <div className="w-full flex items-center gap-2 flex-wrap">
+                        {EditedTabs.map((tab) => (
+                            <Button
+                                key={tab.key}
+                                onClick={() => {
+                                    setActiveTab(tab.key);
+                                    setSelectedPhotos([]);
+                                }}
                                 variant={activeTab === tab.key ? "contained" : "outlined"}
                                 size="small"
                             >

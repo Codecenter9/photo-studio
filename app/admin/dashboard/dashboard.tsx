@@ -99,6 +99,13 @@ const Dashboard = () => {
                     <ClientDetail fetchSchedules={fetchSchedules} schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
                 ) :
                     (<div className='flex flex-col gap-6'>
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-2xl font-bold">Dashboard</h1>
+                            <p className="text-sm text-gray-500">
+                                Quick access to all your admin features and settings. Manage users, view analytics, and configure your application with ease.
+                            </p>
+                        </div>
+
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             <div className="flex flex-col gap-3 rounded-md border border-gray-300 hover:border-gray-500 transition-all duration-300 p-3 cursor-pointer group">
                                 <div className="flex items-center justify-between">

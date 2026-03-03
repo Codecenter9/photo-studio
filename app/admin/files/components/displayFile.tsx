@@ -58,7 +58,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                         <div
                             key={photo.publicId}
                             id={`media-${photo.publicId}`}
-                            className={`relative group rounded-sm overflow-hidden bg-white hover:shadow-sm transition-shadow ${selectedPhotos.includes(photo.publicId) ? "ring-2 ring-gray-300" : ""
+                            className={`relative overflow-hidden group rounded-sm bg-white hover:shadow-sm transition-shadow ${selectedPhotos.includes(photo.publicId) ? "ring-2 ring-gray-300" : ""
                                 }`}
                         >
                             {photo?.resourceType?.startsWith("image") ? (
@@ -68,7 +68,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     width={360}
                                     height={300}
                                     sizes="100vw"
-                                    className="w-full h-40 object-cover"
+                                    className="w-full h-64 object-cover"
                                     crop="fill"
                                     gravity="auto"
                                 />
@@ -80,7 +80,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     controls
                                     autoPlay={false}
                                     muted={false}
-                                    className="w-full h-40 object-cover bg-gray-200 flex items-center justify-center"
+                                    className="w-full h-64 object-cover"
                                     colors={{
                                         accent: "#ff0000",
                                         base: "#00ff00",
@@ -91,7 +91,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                             )}
 
                             <div
-                                className="absolute bottom-0 left-0 w-full bg-white/90 px-2 py-1 flex items-center justify-between transition-all duration-300
+                                className="w-full absolute bottom-0 left-0 bg-white/90 px-2 py-1 flex items-center justify-between transition-all duration-300
                     opacity-100 group-hover:opacity-100 group-hover:translate-y-0"
                             >
                                 <label className="flex items-center gap-1 text-sm cursor-pointer">

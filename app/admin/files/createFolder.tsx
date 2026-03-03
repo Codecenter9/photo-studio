@@ -21,8 +21,8 @@ import { handleError } from '@/lib/error';
 
 interface FolderPropes {
     activeTab: string,
-    selectedClientId?: string | null;
-    setSelectedClientId: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedClientId: string;
+    setSelectedClientId: React.Dispatch<React.SetStateAction<string>>;
     users: IUser[];
     fetchFolders: (clientId: string, status: string) => Promise<void>;
     setSnackbarMessage: React.Dispatch<React.SetStateAction<string>>;

@@ -81,8 +81,6 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
         remainingDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     }
 
-
-
     const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);
 
     return (

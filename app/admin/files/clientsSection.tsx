@@ -15,8 +15,8 @@ interface ClientSectionProps {
     users: IUser[];
     loading: boolean;
     error: string;
-    selectedClientId: string | null;
-    setSelectedClientId: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedClientId: string;
+    setSelectedClientId: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ClientsSection = ({
@@ -30,13 +30,13 @@ const ClientsSection = ({
 
     const handleCheckboxChange = (clientId: string) => {
         setSelectedClientId(prev =>
-            prev === clientId ? null : clientId
+            prev === clientId ? "" : clientId
         );
     };
 
     const handleSelectChange = (event: SelectChangeEvent<string>) => {
         const value = event.target.value;
-        setSelectedClientId(value === "" ? null : value);
+        setSelectedClientId(value === "" ? "" : value);
     };
 
     return (

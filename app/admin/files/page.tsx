@@ -21,8 +21,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { handleError } from "@/lib/error";
 
 const Photos = () => {
-    const [selected, setSelected] = useState<number[]>([]);
-    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const [selectedClientId, setSelectedClientId] = useState<string>("");
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const [users, setUsers] = useState<IUser[]>([]);
@@ -150,10 +149,11 @@ const Photos = () => {
                                     ) : filteredFolders.length > 0 ? (
                                         <FolderSection
                                             folders={filteredFolders}
-                                            loadingFolder={loadingFolder}
-                                            selected={selected}
-                                            setSelected={setSelected}
+                                            setSnackbarOpen={setSnackbarOpen}
+                                            setSnackbarMessage={setSnackbarMessage}
                                             selectedClientId={selectedClientId}
+                                            activeTab={activeTab}
+                                            fetchFolders={fetchFolders}
                                             setSelectedFolderId={setSelectedFolderId}
                                         />
                                     ) : (
