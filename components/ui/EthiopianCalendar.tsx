@@ -28,7 +28,7 @@ export default function CalendarSwitcher({ className, value, onChange }: Calenda
     const [showMonthYearPicker, setShowMonthYearPicker] = useState(false);
 
     const getEthiopianDate = (date?: Date | null) => {
-        const d = date ? new Date(date) : new Date(); 
+        const d = date ? new Date(date) : new Date();
         const [year, month, day] = toEthiopian(
             d.getFullYear(),
             d.getMonth() + 1,

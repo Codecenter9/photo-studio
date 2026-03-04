@@ -5,6 +5,7 @@ import { EllipsisVertical, Folder } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 import { handleError } from "@/lib/error";
+import DeleteModal from "@/components/ui/deleteModal";
 
 interface FolderSectionPropes {
     folders: {
@@ -35,6 +36,10 @@ const FolderSection = ({
     const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
     const [newName, setNewName] = useState("");
 
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string>("");
 
@@ -45,15 +50,18 @@ const FolderSection = ({
     };
 
     const handleDelete = async (id: string) => {
+        setIsDeleting(true);
         try {
             await axios.delete(`/api/folders/${id}`);
 
             setOpenDropdownId(null);
+            fetchFolders(selectedClientId, activeTab);
             setSnackbarMessage("Folder deleted successfully");
             setSnackbarOpen(true);
-            fetchFolders(selectedClientId, activeTab);
         } catch (err) {
             console.error("Delete failed", err);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -87,6 +95,9 @@ const FolderSection = ({
 
     return (
         <div className="flex items-center justify-start w-full">
+            {deleteModalOpen && (
+                <div className="fixed inset-0 bg-black/40 z-40"></div>
+            )}
             {selectedClientId ? (
                 <div className="w-full">
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -175,7 +186,10 @@ const FolderSection = ({
                                         </span>
 
                                         <span
-                                            onClick={() => handleDelete(folder._id)}
+                                            onClick={() => {
+                                                setFolderToDelete(folder._id);
+                                                setDeleteModalOpen(true);
+                                            }}
                                             className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
                                         >
                                             Delete
@@ -192,6 +206,22 @@ const FolderSection = ({
                 </div>
             )
             }
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                title="Delete Folder"
+                description="Are you sure you want to delete this folder? This action cannot be undone."
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setFolderToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (folderToDelete) {
+                        handleDelete(folderToDelete);
+                    }
+                }}
+                confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
+            />
         </div >
     );
 };

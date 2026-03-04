@@ -38,11 +38,13 @@ export async function PATCH(req: NextRequest) {
         grouped[type].push(file.publicId);
       });
 
-      for (const type in grouped) {
-        await cloudinary.api.delete_resources(grouped[type], {
-          resource_type: type
-        });
-      }
+        for (const type in grouped) {
+             if (grouped[type].length > 0) {
+               await cloudinary.api.delete_resources(grouped[type], {
+                 resource_type: type as "image" | "video" | "raw",
+             });
+           }
+        }
 
       await File.deleteMany({
         publicId: { $in: photoIds }

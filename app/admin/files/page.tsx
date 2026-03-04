@@ -110,7 +110,7 @@ const Photos = () => {
         <>
 
             {selectedFolderId ? (
-                <PhotoSection selectedClient={selectedClient} userId={loggedInUserId} selectedFolder={selectedFolder} setSelectedFolderId={setSelectedFolderId} />
+                <PhotoSection selectedClient={selectedClient} userId={loggedInUserId} selectedFolder={selectedFolder} setSelectedFolderId={setSelectedFolderId} setSnackbarOpen={setSnackbarOpen} setSnackbarMessage={setSnackbarMessage} />
             ) : (
                 <div className="h-screen w-full flex flex-col lg:flex-row gap-4 border rounded-lg border-gray-300 overflow-hidden ">
                     <div className={`${selectedFolderId ? "hidden" : "flex"} w-full lg:w-1/4 border-b lg:border-b-0 lg:border-r border-gray-300 flex-col`}>

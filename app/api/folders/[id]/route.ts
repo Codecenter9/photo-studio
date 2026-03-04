@@ -62,7 +62,7 @@ export async function DELETE(
   try {
     await dbConnection();
 
-   const {id} = await params;
+    const { id } =await params;
 
     if (!id) {
       return NextResponse.json(
@@ -80,7 +80,7 @@ export async function DELETE(
       );
     }
 
-    const files = await File.find({ id });
+    const files = await File.find({ folderId: id });
 
     if (files.length > 0) {
       const grouped: Record<string, string[]> = {};
@@ -92,12 +92,14 @@ export async function DELETE(
       });
 
       for (const type in grouped) {
-        await cloudinary.api.delete_resources(grouped[type], {
-          resource_type: type,
-        });
+        if (grouped[type].length > 0) {
+          await cloudinary.api.delete_resources(grouped[type], {
+            resource_type: type as "image" | "video" | "raw",
+          });
+        }
       }
 
-      await File.deleteMany({ id });
+      await File.deleteMany({ folderId: id });
     }
 
     await Folder.findByIdAndDelete(id);

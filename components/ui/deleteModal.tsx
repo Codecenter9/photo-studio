@@ -22,8 +22,8 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center ">
-            <div className="bg-gray-800 rounded-md shadow-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="bg-gray-800 rounded-md shadow-lg max-w-sm w-full p-6">
                 <h2 className="text-md font-semibold text-gray-200">
                     {title}
                 </h2>

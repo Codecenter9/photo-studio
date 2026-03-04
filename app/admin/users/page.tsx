@@ -2,17 +2,25 @@
 
 import React, { useEffect, useState } from 'react'
 import UsersForm from './usersForm'
-import { Button, CircularProgress, IconButton } from '@mui/material'
+import { Alert, Button, CircularProgress, IconButton, Snackbar } from '@mui/material'
 import { Edit, Trash } from 'lucide-react'
 import axios from 'axios'
 import { IUser } from '@/types/models/user'
 import { handleError } from '@/lib/error'
+import DeleteModal from '@/components/ui/deleteModal'
 
 const Users = () => {
     const [open, setOpen] = useState(false);
     const [users, setUsers] = useState<IUser[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
+
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState("")
 
     const fetchUsers = async () => {
         try {
@@ -30,11 +38,31 @@ const Users = () => {
         fetchUsers();
     }, []);
 
+    const handleDeleteUser = async (id: string) => {
+        setIsDeleting(true);
+        try {
+            await axios.delete(`/api/auth/user/${id}`);
+
+            setSnackbarMessage("User deleted successfully");
+            setSnackbarOpen(true);
+            setUserToDelete(null)
+            setDeleteModalOpen(false);
+            fetchUsers();
+        } catch (err) {
+            console.error("Delete failed", err);
+        } finally {
+            setIsDeleting(false)
+        }
+    }
+
     const clients = users.filter((client) => client.role === "client");
     const admins = users.filter((admin) => admin.role === "admin");
 
     return (
         <div className='flex flex-col gap-3'>
+            {deleteModalOpen && (
+                <div className="fixed inset-0 bg-black/40 z-40"></div>
+            )}
             <div className="flex flex-col gap-1">
                 <h1 className="text-2xl font-bold">Users</h1>
                 <p className="text-sm text-gray-500">
@@ -82,7 +110,11 @@ const Users = () => {
                                                         <IconButton size='small' color="info">
                                                             <Edit size={16} />
                                                         </IconButton>
-                                                        <IconButton size='small' color="error">
+                                                        <IconButton onClick={() => {
+                                                            setUserToDelete(user._id);
+                                                            setDeleteModalOpen(true);
+                                                        }}
+                                                            size='small' color="error">
                                                             <Trash size={16} />
                                                         </IconButton>
                                                     </td>
@@ -137,6 +169,36 @@ const Users = () => {
             </div>
 
             <UsersForm setOpen={setOpen} open={open} fetchUsers={fetchUsers} />
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                title="Delete User"
+                description="Are you sure you want to delete this user? This action cannot be undone."
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setUserToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (userToDelete) {
+                        handleDeleteUser(userToDelete);
+                    }
+                }}
+                confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
+            />
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity="success"
+                    sx={{ width: '100%' }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     )
 }
