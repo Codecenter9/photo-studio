@@ -174,7 +174,7 @@ const MyDetails = ({  schedules, selectedSchedule, setSelectedScheduleId }: MyDe
                   </span>
                 </li>
                 {recentSchedule?.notes && (
-                  <li className='w-full flex flex-col items-center bg-gray-100 border border-gray-200 rounded-md p-3 mt-3 justify-between'>
+                  <li className='w-full flex flex-col items-center bg-gray-200 border border-gray-200 rounded-md p-3 mt-3 justify-between'>
                     <span className="text-base font-light font-serif underline mb-3">Additional Notes</span>
                     <span className="text-sm text-amber-500 font-extralight font-serif">{recentSchedule?.notes}</span>
                   </li>

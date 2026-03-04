@@ -28,7 +28,7 @@ export default function AdminLayout({
     return (
         <CalendarProvider>
             <SessionProvider session={session}>
-                <div className={`relative overflow-x-hidden flex h-screen scrollbar-thin ${roboto.className} font-sans`}>
+                <div className={`relative font-serif overflow-x-hidden flex h-screen scrollbar-thin ${roboto.className} font-sans`}>
                     <Sidebar isOpen={isOpen} collapsed={collapsed} setCollapsed={setCollapsed} setIsOpen={setIsOpen} />
                     <div className={`relative flex flex-col flex-1 transition-all duration-300 ease-in-out ${collapsed ? "lg:ml-24" : "lg:ml-64"}`}>
                         <Navbar collapsed={collapsed} setIsOpen={setIsOpen} />

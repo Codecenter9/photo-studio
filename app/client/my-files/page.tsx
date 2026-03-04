@@ -1,6 +1,5 @@
 "use client";
 import {
-    Typography,
     Alert,
     Snackbar,
     Button,
@@ -70,13 +69,13 @@ const MyFiles = () => {
             ) : (
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col lg:flex-row justify-between gap-3">
-                        <Typography variant="h5" component="h1" className="font-semibold">
-                            My Files:
+                        <div className="font-serif">
+                            <h1 className="text-2xl font-bold">My Files</h1>
                             <p className="text-sm text-gray-500">
                                 Manage and organize your files here.
                             </p>
-                        </Typography >
-                        <div className="flex flex-wrap gap-2">
+                        </div >
+                        <div className="flex gap-2">
                             {Tabs.map((tab) => (
                                 <Button
                                     key={tab.key}

@@ -93,7 +93,7 @@ const MySchedules = () => {
 
                     <div className="relative flex flex-col gap-8">
                         <div className="flex items-center justify-between">
-                            <div>
+                            <div className='font-serif'>
                                 <h1 className="text-2xl font-bold">Schedules</h1>
                                 <p className="text-sm text-gray-500">
                                     Manage and organize your photo schedules.
