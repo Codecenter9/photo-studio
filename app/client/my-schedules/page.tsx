@@ -88,7 +88,7 @@ const MySchedules = () => {
         <>
             {
                 selectedSchedule ? (
-                    <MyDetails user={user} schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
+                    <MyDetails schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
                 ) : (
 
                     <div className="relative flex flex-col gap-8">

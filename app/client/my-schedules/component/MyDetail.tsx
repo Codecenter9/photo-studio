@@ -5,15 +5,18 @@ import { IUser } from '../../../../types/models/user';
 import { formatDate as formatCalendarDate } from "@/lib/calendar";
 import { useCalendar } from '@/context/CalendarContext';
 import { Box } from '@mui/material';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface MyDetailSectionProps {
-  user?: IUser;
   schedules: ISchedule[];
   selectedSchedule?: ISchedule;
   setSelectedScheduleId?: React.Dispatch<React.SetStateAction<string>>;
 }
-const MyDetails = ({ user, schedules, selectedSchedule, setSelectedScheduleId }: MyDetailSectionProps) => {
+const MyDetails = ({  schedules, selectedSchedule, setSelectedScheduleId }: MyDetailSectionProps) => {
   const { mode } = useCalendar();
+
+  const currentUser = useCurrentUser();
+  const user = currentUser?.loggedInUser;
 
   const getClientId = (client: any) =>
     typeof client === "object" && "_id" in client
