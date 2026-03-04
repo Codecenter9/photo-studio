@@ -1,5 +1,5 @@
 // components/DeleteModal.tsx
-import { Button } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import React from "react";
 
 interface DeleteModalProps {
@@ -23,29 +23,18 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="bg-gray-800 rounded-md shadow-lg max-w-sm w-full p-6">
-                <h2 className="text-md font-semibold text-gray-200">
-                    {title}
-                </h2>
-                <p className="mt-2 text-sm text-gray-300">
+            <Dialog maxWidth="xs" open={isOpen} onClose={onClose} >
+                <DialogTitle>{title}</DialogTitle>
+                <DialogContent>
                     {description}
-                </p>
-                <div className="mt-4 flex justify-end gap-3">
-                    <Button
-                        size="small"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        size="small"
-                        color="error"
-                        onClick={onConfirm}
-                    >
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={onConfirm} color="error">
                         {confirmText}
                     </Button>
-                </div>
-            </div>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

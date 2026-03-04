@@ -95,9 +95,6 @@ const FolderSection = ({
 
     return (
         <div className="flex items-center justify-start w-full">
-            {deleteModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-40"></div>
-            )}
             {selectedClientId ? (
                 <div className="w-full">
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

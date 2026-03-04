@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/getCurrentUser";
 export async function GET(request: NextRequest) {
   try {
     await dbConnection();
-
+    
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get("clientId");
     const status = searchParams.get("status");

@@ -136,9 +136,6 @@ const SchedulesPage = () => {
                     <ClientDetail fetchSchedules={fetchSchedules} schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
                 ) : (
                     <div className="relative flex flex-col gap-8">
-                        {deleteModalOpen && (
-                            <div className="fixed inset-0 bg-black/40 z-40"></div>
-                        )}
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold">Schedules</h1>
@@ -166,7 +163,7 @@ const SchedulesPage = () => {
 
                                     {loading ? (
                                         <div className="flex items-center justify-center gap-2 py-6">
-                                            <CircularProgress enableTrackSlot size={15}/> <span>Loading schedules...</span>
+                                            <CircularProgress enableTrackSlot size={15} /> <span>Loading schedules...</span>
                                         </div>
                                     ) : error ? (
                                         <Alert severity="error">{error}</Alert>

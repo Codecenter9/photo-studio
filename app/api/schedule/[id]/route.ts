@@ -1,8 +1,32 @@
 
 import dbConnection from "@/lib/mongodb";
 import Schedule from "@/model/Schedule";
-import { NextResponse } from "next/server";
+import {  NextResponse } from "next/server";
 
+export async function GET(req: Request,
+  { params }: { params: Promise<{ id: string }> } ) {
+  try {
+    await dbConnection();
+    
+   const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "clientId is required" },
+        { status: 400 }
+      );
+    }
+
+    const schedules = await Schedule.find({ clientId: id }).sort({ createdAt: -1 });;
+    return NextResponse.json(schedules);
+  } catch (error) {
+    console.error("Get schedules error:", error);
+    return NextResponse.json(
+      { message: "Server Error" },
+      { status: 500 }
+    );
+  }
+}
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> } 

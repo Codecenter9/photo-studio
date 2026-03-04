@@ -1,39 +1,89 @@
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { IFolder } from '@/types/models/folder';
 import { Button, Checkbox, IconButton, Typography } from '@mui/material';
-import { ArrowLeft, Download, Share2 } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react'
+import { ArrowLeft, Download, Filter, Send, Share2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ClientPhotoDisplay from './clientPhotoDisplay';
 import 'next-cloudinary/dist/cld-video-player.css';
 import { IFile } from '@/types/models/File';
 import axios from 'axios';
 import { handleError } from '@/lib/error';
-
+import { useCalendar } from '@/context/CalendarContext';
+import { formatDate } from "@/lib/calendar";
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 interface PhotoSectionProps {
     selectedFolder?: IFolder | null;
     setSelectedFolderId?: React.Dispatch<React.SetStateAction<string | null>>;
 }
 const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps) => {
+    const { mode } = useCalendar();
 
     const currentUser = useCurrentUser();
     const selectedClient = currentUser?.loggedInUser;
-
-    const [photos, setPhotos] = useState<IFile[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>("");
-    const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
-    const [activeTab, setActiveTab] = useState("UnSelected");
-    const [submitting, setSubmitting] = useState(false);
-
-    const Tabs = [
-        { label: "UnSelected Files", key: "UnSelected" },
-        { label: "Selected Files", key: "Selected" },
-    ];
 
     const selectedClientId = selectedClient?.id || null;
 
     const selectedFolderId = selectedFolder?._id || null;
 
+    const [photos, setPhotos] = useState<IFile[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>("");
+    const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+
+    const [activeTab, setActiveTab] = useState("UnSelected");
+    const [fileTypeActiveTab, setFileTypeActiveTab] = useState("Image");
+    const [submitting, setSubmitting] = useState(false);
+
+    const folderStatus = selectedFolder?.status;
+
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const UnEditedTabs = [
+        { label: "UnSelected", key: "UnSelected" },
+        { label: "Selected", key: "Selected" },
+    ];
+
+    const FileTypeTab = [
+        { label: "Images", key: "Image" },
+        { label: "Videos", key: "Video" },
+    ]
+
+    const EditedTabs = useMemo(() => {
+        if (!photos.length) return [];
+
+        const grouped: Record<string, string> = {};
+
+        photos.forEach((photo) => {
+            const isoDate = new Date(photo.createdAt)
+                .toISOString()
+                .split("T")[0];
+
+            if (!grouped[isoDate]) {
+                grouped[isoDate] = formatDate(photo.createdAt, mode);
+            }
+        });
+
+        return Object.entries(grouped)
+            .sort((a, b) => (a[0] > b[0] ? -1 : 1))
+            .map(([isoDate, label]) => ({
+                key: isoDate,
+                label: selectedFolder?.name.slice(0, 7) + " - " + label,
+            }));
+    }, [photos, mode, selectedFolder]);
+
+    useEffect(() => {
+        if (folderStatus !== "UnEdited" && EditedTabs.length > 0) {
+            setActiveTab(EditedTabs[0].key);
+        }
+    }, [EditedTabs, folderStatus]);
     const fetchPhotos = useCallback(async () => {
         if (!selectedFolderId || !selectedClientId) return;
 
@@ -153,18 +203,46 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
         }
     };
 
+    const handleShareSelected = async () => {
+        alert("shared");
+    }
 
-    const folderStatus = selectedFolder?.status;
+    const filteredPhotos = useMemo(() => {
+        let result = photos;
 
-    const filteredPhotos = photos.filter(photo => photo.selectionStatus === activeTab);
+        if (folderStatus === "UnEdited") {
+            result = result.filter(photo => photo.selectionStatus === activeTab);
+        } else {
+            result = result.filter(photo => {
+                const isoDate = new Date(photo.createdAt)
+                    .toISOString()
+                    .split("T")[0];
 
-    const visiblePhotos = folderStatus === "UnEdited" ? filteredPhotos : photos;
+                return isoDate === activeTab;
+            });
+        }
+
+        result = result.filter(photo => {
+            if (fileTypeActiveTab === "Image") {
+                return photo.resourceType === "image";
+            }
+            if (fileTypeActiveTab === "Video") {
+                return photo.resourceType === "video";
+            }
+            return true;
+        });
+
+        return result;
+
+    }, [photos, activeTab, folderStatus, fileTypeActiveTab]);
+
+    const visiblePhotos = filteredPhotos;
 
 
     return (
-        <div className="w-full flex flex-col items-center gap-8 overflow-hidden">
-            <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+        <div className="w-full flex flex-col items-center gap-5 overflow-hidden">
+            <div className="w-full flex items-center justify-between gap-2">
+                <div className="flex gap-2 items-center">
                     <span
                         onClick={() => setSelectedFolderId && setSelectedFolderId(null)}
                         className="flex items-center justify-center p-2 rounded-full hover:border border-gray-300 transition-all duration-300 cursor-pointer"
@@ -172,71 +250,187 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                         <ArrowLeft size={20} />
                     </span>
 
-                    <div className="flex flex-col">
-                        <span className="text-base font-light text-gray-600">
-                            Selected Folder:{" "}
-                            <i className="underline font-light">{selectedFolder?.name}</i>
-                        </span>
-                        <em className="text-sm font-light">
-                            List of photos and videos under this folder appears here
-                        </em>
-                    </div>
+                    <span className="flex flex-col gap-0 font-serif">
+                        <b>Selected Folder:</b>
+                        <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedFolder?.name}</i>
+                    </span>
                 </div>
 
-                <div className="flex items-center justify-end bg-gray-100 p-2 rounded-md">
-                    <Typography variant="body2" className="mr-auto">
-                        {selectedPhotos.length} selected
-                    </Typography>
-                    <Checkbox
-                        size="small"
-                        checked={
-                            visiblePhotos.length > 0 &&
-                            visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                        }
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 justify-start">
+                        <Typography className="text-sm font-light flex gap-2 capitalize">
+                            <span className="px-2 py-0.5 rounded-full items-center bg-amber-100 hover:bg-amber-200">
+                                {selectedPhotos.length}
+                            </span>
+                        </Typography>
 
-                        indeterminate={
-                            visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
-                            !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                        }
-                        onChange={handleSelectAllToggle}
-                    />
-                    {selectedPhotos.length > 0 && (
-                        <div>
-                            <IconButton title="Share" >
-                                <Share2 size={18} />
-                            </IconButton>
-                            <IconButton onClick={handleDownloadSelected} title="Download" size="small">
-                                <Download size={18} />
-                            </IconButton>
+                        <div
+                            className="cursor-pointer">
+                            {visiblePhotos.length > 0 &&
+                                visiblePhotos.every(p => selectedPhotos.includes(p.publicId)) ? (
+                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-red-100 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
+                                    Unselect All
+                                </span>
+                            ) : (
+                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-gray-200 px-2 py-0.5 rounded-md hover:bg-gray-300 hover:text-gray-950  transition-all duration-300">
+                                    Select All
+                                </span>
+                            )}
+                            <span className="flex lg:hidden">
+                                <Checkbox
+                                    size="medium"
+                                    checked={
+                                        visiblePhotos.length > 0 &&
+                                        visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                    }
+
+                                    indeterminate={
+                                        visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                        !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                    }
+                                    onChange={handleSelectAllToggle}
+                                />
+                            </span>
                         </div>
-                    )}
-                    <div className="ml-2">
+
+                        <div
+                            onClick={() => {
+                                if (selectedPhotos.length === 0) {
+                                    alert("Please select at least 1 file");
+                                    return;
+                                }
+                                handleShareSelected();
+                            }}
+                            title="Share"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                        >
+                            <span className="hidden lg:flex">
+                                Share
+                            </span>
+                            <span className="">
+                                <Share2 size={18} />
+                            </span>
+                        </div>
+
+                        <div
+                            onClick={() => {
+                                if (selectedPhotos.length === 0) {
+                                    alert("Please select at least 1 file");
+                                    return;
+                                }
+                                handleDownloadSelected();
+                            }}
+                            title="Download"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                        >
+                            <span className="hidden lg:flex ">
+                                Download
+                            </span>
+                            <span className="">
+                                <Download size={18} />
+                            </span>
+                        </div>
                         {folderStatus === "UnEdited" && (
-                            <Button variant='outlined' color='info' size='small' onClick={handleSelectedSubmit}>{submitting ? "Submitting..." : "Submit"} </Button>
+                            <div onClick={() => {
+                                if (selectedPhotos.length === 0) {
+                                    alert("Please select at least 1 file");
+                                    return;
+                                }
+                                handleSelectedSubmit();
+                            }}
+                                title="Delete"
+                                className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                            >
+
+                                <span className="">
+                                    {submitting ? "Submiting..." : "Submit"}
+                                </span>
+                                <span className="">
+                                    <Send size={18} />
+                                </span>
+                            </div>
                         )}
                     </div>
+
                 </div>
             </div>
 
-            {folderStatus === "UnEdited" && (
-                <div className="w-full flex flex-col items-center justify-start gap-5">
-                    <div className="w-full flex items-center gap-2">
-                        {Tabs.map((tab) => (
+            <div className="w-full flex items-center justify-between gap-3 mb-5">
+                <div className="w-full flex flex-2">
+                    {folderStatus === "UnEdited" ? (
+                        <div className="w-full flex items-center gap-2">
+                            {UnEditedTabs.map((tab) => (
+                                <Button
+                                    key={tab.key}
+                                    onClick={() => (
+                                        setActiveTab(tab.key),
+                                        setSelectedPhotos([])
+                                    )}
+                                    variant={activeTab === tab.key ? "contained" : "outlined"}
+                                    size="small"
+                                >
+                                    {tab.label}
+                                </Button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 bg-gray-200 py-1 px-3 rounded-md cursor-pointer hover:bg-gray-300 transition-all duration-300">
                             <Button
-                                key={tab.key}
-                                onClick={() => (
-                                    setActiveTab(tab.key),
-                                    setSelectedPhotos([])
-                                )}
-                                variant={activeTab === tab.key ? "contained" : "outlined"}
+                                id="basic-button"
+                                aria-controls={open ? 'basic-menu' : undefined}
+                                aria-haspopup="true"
+                                aria-expanded={open ? 'true' : undefined}
+                                onClick={handleClick}
                                 size="small"
                             >
-                                {tab.label}
+                                <Filter size={18} />
+                                <span className="ml-2">Filter</span>
                             </Button>
-                        ))}
-                    </div>
+                            <Menu
+                                id="basic-menu"
+                                anchorEl={anchorEl}
+                                open={open}
+                                onClose={handleClose}
+                                slotProps={{
+                                    list: {
+                                        'aria-labelledby': 'basic-button',
+                                    },
+                                }}
+                            >
+                                {EditedTabs.map((tab) => (
+                                    <MenuItem
+                                        key={tab.key}
+                                        onClick={() => (
+                                            handleClose(),
+                                            setActiveTab(tab.key),
+                                            setSelectedPhotos([]))
+                                        } className={`flex flex-col gap-2`}
+                                        selected={activeTab === tab.key}
+                                    >
+
+                                        {tab.label}
+                                    </MenuItem>
+                                ))}
+                            </Menu>
+                        </div>
+                    )}
                 </div>
-            )}
+                <div className="w-full flex lg:flex-1 justify-end items-center gap-2 ">
+                    {FileTypeTab.map((tab) => (
+                        <Button
+                            key={tab.key}
+                            onClick={() => (
+                                setFileTypeActiveTab(tab.key),
+                                setSelectedPhotos([])
+                            )}
+                            variant={fileTypeActiveTab === tab.key ? "contained" : "outlined"}
+                            size="small"
+                        >
+                            {tab.label}
+                        </Button>
+                    ))}
+                </div>
+            </div>
 
             <ClientPhotoDisplay
                 photos={visiblePhotos}

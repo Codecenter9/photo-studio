@@ -37,7 +37,7 @@ const scheduleSchema = new Schema(
         "completed",
         "cancelled",
       ],
-      default: "Booked",
+      default: "booked",
     },
 
     photographerId: {

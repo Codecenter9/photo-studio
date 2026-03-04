@@ -1,7 +1,7 @@
 import dbConnection from "@/lib/mongodb";
 import Schedule from "@/model/Schedule";
 import User from "@/model/User";
-import { NextResponse } from "next/server";
+import {  NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/getCurrentUser";
 import bcrypt from "bcryptjs";
 

@@ -5,302 +5,259 @@ import {
     IconButton,
     Typography,
     Chip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     CircularProgress,
-    Pagination,
     Alert,
     Divider,
 } from '@mui/material';
-import { Eye, Trash, Plus } from 'lucide-react';
-
-interface Schedule {
-    id: number;
-    date: string;
-    type: string;
-    description?: string;
-    location?: string;
-}
-
-const fetchSchedules = (): Promise<Schedule[]> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve([
-                { id: 1, date: '2025-03-15', type: 'Wedding', description: 'Smith wedding', location: 'Central Park' },
-                { id: 2, date: '2025-02-10', type: 'Conference', description: 'Tech conference', location: 'Convention Center' },
-                { id: 3, date: '2025-04-20', type: 'Birthday', description: 'Sarah’s 30th', location: 'Rooftop Lounge' },
-                { id: 4, date: '2025-01-05', type: 'Meeting', description: 'Project kickoff', location: 'Zoom' },
-                { id: 5, date: '2025-05-12', type: 'Wedding', description: 'Johnson wedding', location: 'Beach Resort' },
-            ]);
-        }, 1000);
-    });
-};
+import { Trash, Plus } from 'lucide-react';
+import { useCalendar } from '@/context/CalendarContext';
+import { handleError } from '@/lib/error';
+import axios from 'axios';
+import { ISchedule } from '@/types/models/Schedule';
+import { formatDate as formatCalendarDate } from '@/lib/calendar';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import MyDetails from './component/MyDetail';
 
 const MySchedules = () => {
-    // State
-    const [schedules, setSchedules] = useState<Schedule[]>([]);
-    const [filteredSchedules, setFilteredSchedules] = useState<Schedule[]>([]);
+
+    const [schedules, setSchedules] = useState<ISchedule[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [filter, setFilter] = useState<'upcoming' | 'completed' | 'all'>('all');
-    const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-    const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const itemsPerPage = 5;
+
+    const [selectedScheduleId, setSelectedScheduleId] = useState("");
+    // const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    // const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
+    // const [isDeleting, setIsDeleting] = useState(false);
+
+    // const [snackbarOpen, setSnackbarOpen] = useState(false);
+    // const [snackbarMessage, setSnackbarMessage] = useState("");
+
+    const { mode } = useCalendar();
+    const currentUser = useCurrentUser();
+    const user = currentUser?.loggedInUser;
+    const clientId = user?.id || "";
+
+    const fetchSchedules = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(
+                `/api/schedule/${clientId}`
+            );
+            setSchedules(response.data);
+        } catch (err: unknown) {
+            setError(handleError(err));
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadSchedules = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchSchedules();
-                setSchedules(data);
-                setFilteredSchedules(data);
-                setError(null);
-            } catch (err) {
-                setError('Failed to load schedules. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadSchedules();
+        fetchSchedules();
     }, []);
 
-    useEffect(() => {
-        const today = new Date().toISOString().split('T')[0];
-        let filtered = schedules;
-        if (filter === 'upcoming') {
-            filtered = schedules.filter((s) => s.date >= today);
-        } else if (filter === 'completed') {
-            filtered = schedules.filter((s) => s.date < today);
-        }
-        setFilteredSchedules(filtered);
-        setPage(1);
-    }, [filter, schedules]);
+    // const handleDeleteSchedule = async (id: string) => {
+    //     setIsDeleting(true);
+    //     try {
+    //         await axios.delete(`/api/schedule/${id}`);
 
-    const totalPages = Math.ceil(filteredSchedules.length / itemsPerPage);
-    const paginatedSchedules = filteredSchedules.slice(
-        (page - 1) * itemsPerPage,
-        page * itemsPerPage
+    //         setDeleteModalOpen(false);
+    //         setScheduleToDelete(null);
+    //         setSnackbarMessage("Schedule deleted successfully");
+    //         setSnackbarOpen(true);
+    //     } catch (err) {
+    //         console.error("Delete failed", err);
+    //         setSnackbarMessage("Failed to delete schedule");
+    //     } finally {
+    //         setIsDeleting(false);
+    //     }
+    // }
+
+    const upcommingSchedules = schedules?.filter(
+        (schedule) => schedule.status && !["completed", "delivered"].includes(schedule.status)
     );
 
-    // Handlers
-    const handleFilterChange = (newFilter: 'upcoming' | 'completed' | 'all') => {
-        setFilter(newFilter);
-    };
+    const completedSchedules = schedules?.filter(
+        (schedule) => schedule.status && ["completed", "delivered"].includes(schedule.status)
+    );
 
-    const handleView = (schedule: Schedule) => {
-        setSelectedSchedule(schedule);
-    };
+    const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);
 
-    const handleCloseDetail = () => {
-        setSelectedSchedule(null);
-    };
-
-    const handleDeleteClick = (schedule: Schedule) => {
-        setScheduleToDelete(schedule);
-        setDeleteDialogOpen(true);
-    };
-
-    const handleDeleteConfirm = () => {
-        if (scheduleToDelete) {
-            setSchedules((prev) => prev.filter((s) => s.id !== scheduleToDelete.id));
-            setDeleteDialogOpen(false);
-            setScheduleToDelete(null);
-        }
-    };
-
-    const handleDeleteCancel = () => {
-        setDeleteDialogOpen(false);
-        setScheduleToDelete(null);
-    };
-
-    const getStatusChip = (date: string) => {
-        const today = new Date().toISOString().split('T')[0];
-        const isUpcoming = date >= today;
-        return (
-            <Chip
-                label={isUpcoming ? 'Upcoming' : 'Completed'}
-                color={isUpcoming ? 'success' : 'default'}
-                size="small"
-                variant="outlined"
-            />
-        );
-    };
+    const selectedSchedule = schedules?.find((schedule) => schedule._id === selectedScheduleId);
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex flex-col lg:flex-row justify-between gap-3">
-                <Typography variant="h5" component="h1" className="font-semibold">
-                    My Schedules
-                </Typography>
-                <div className="flex gap-2">
-                    <Button
-                        variant={filter === 'all' ? 'contained' : 'outlined'}
-                        size="small"
-                        onClick={() => handleFilterChange('all')}
-                    >
-                        All
-                    </Button>
-                    <Button
-                        variant={filter === 'upcoming' ? 'contained' : 'outlined'}
-                        size="small"
-                        onClick={() => handleFilterChange('upcoming')}
-                    >
-                        Upcoming
-                    </Button>
-                    <Button
-                        variant={filter === 'completed' ? 'contained' : 'outlined'}
-                        size="small"
-                        onClick={() => handleFilterChange('completed')}
-                    >
-                        Completed
-                    </Button>
-                </div>
-            </div>
+        <>
+            {
+                selectedSchedule ? (
+                    <MyDetails user={user} schedules={schedules} selectedSchedule={selectedSchedule} setSelectedScheduleId={setSelectedScheduleId} />
+                ) : (
 
-            <div className="flex flex-col lg:flex-row gap-6">
-                <div className="w-full lg:flex-2 border border-gray-300 bg-white rounded-md p-3">
-                    {loading ? (
-                        <div className="flex justify-center items-center py-10">
-                            <CircularProgress enableTrackSlot size={30} />
-                        </div>
-                    ) : error ? (
-                        <Alert severity="error">{error}</Alert>
-                    ) : paginatedSchedules.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
-                            No schedules found.
-                        </div>
-                    ) : (
-                        <div className='overflow-x-auto'>
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-100">
-                                    <tr>
-                                        <th className="p-2">ID</th>
-                                        <th className="p-2">Date</th>
-                                        <th className="p-2">Type</th>
-                                        <th className="p-2">Status</th>
-                                        <th className="p-2 text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {paginatedSchedules.map((schedule) => (
-                                        <tr key={schedule.id} className="border-b hover:bg-gray-50">
-                                            <td className="p-2">{schedule.id}</td>
-                                            <td className="p-2">{new Date(schedule.date).toLocaleDateString()}</td>
-                                            <td className="p-2">{schedule.type}</td>
-                                            <td className="p-2">{getStatusChip(schedule.date)}</td>
-                                            <td className="p-2 text-center">
-                                                <IconButton
-                                                    size="small"
-                                                    color="primary"
-                                                    onClick={() => handleView(schedule)}
-                                                >
-                                                    <Eye size={18} />
-                                                </IconButton>
-                                                <IconButton
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => handleDeleteClick(schedule)}
-                                                >
-                                                    <Trash size={18} />
-                                                </IconButton>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                    <div className="relative flex flex-col gap-8">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold">Schedules</h1>
+                                <p className="text-sm text-gray-500">
+                                    Manage and organize your photo schedules.
+                                </p>
+                            </div >
+                        </div >
 
-                            {totalPages > 1 && (
-                                <div className="flex justify-center mt-4">
-                                    <Pagination
-                                        count={totalPages}
-                                        page={page}
-                                        onChange={(_, value) => setPage(value)}
-                                        color="primary"
-                                        size="small"
-                                    />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                            <div className="col-span-2 flex flex-col gap-3">
+                                <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
+                                    <h2 className="text-base text-gray-700 font-semibold">Upcomming Schedules</h2>
+                                    {loading ? (
+                                        <div className="flex items-center justify-center gap-2 py-6">
+                                            <CircularProgress enableTrackSlot size={15} /> <span>Loading schedules...</span>
+                                        </div>
+                                    ) : error ? (
+                                        <Alert severity="error">{error}</Alert>
+                                    ) : upcommingSchedules?.length === 0 ? (
+                                        <p className="py-4 text-gray-500 text-center">No schedules found.</p>
+                                    ) : (
+                                        <div className="overflow-auto scrollbar-thin rounded-md border border-gray-200">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-200">
+                                                    <tr>
+                                                        <th className="p-2 text-left">#</th>
+                                                        <th className="p-2 text-left">Type</th>
+                                                        <th className="p-2 text-left">Date</th>
+                                                        <th className="p-2 text-left">Status</th>
+                                                        <th className="p-2 text-center">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {upcommingSchedules?.map((item, index) => (
+                                                        <tr key={item._id} className="hover:bg-gray-200 group border-b border-gray-200 cursor-pointer">
+                                                            <td className="p-2">{index + 1}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id)} className="p-2 group-hover:text-blue-500 capitalize">{item.scheduleType}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id)} className="p-2">{formatDate(item.eventDate)}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id)} className="p-2">
+                                                                <span
+                                                                    className={`px-3 py-1 rounded-sm text-xs font-semibold capitalize ${item.status === "completed"
+                                                                        ? "bg-green-100 text-green-700"
+                                                                        : item.status === "editing"
+                                                                            ? "bg-yellow-100 text-yellow-700"
+                                                                            : item.status === "cancelled"
+                                                                                ? "bg-red-100 text-red-700"
+                                                                                : "bg-cyan-100 text-cyan-700"
+                                                                        }`}
+                                                                >
+                                                                    {item.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-2 text-center flex justify-center gap-2">
+                                                                <IconButton
+                                                                    // onClick={() => {
+                                                                    //     setScheduleToDelete(item._id);
+                                                                    //     setDeleteModalOpen(true);
+                                                                    // }}
+                                                                    size="small"
+                                                                    color="error"
+                                                                >
+                                                                    <Trash size={14} />
+                                                                </IconButton>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                    )}
-                </div>
+                                <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
+                                    <h2 className="text-base text-gray-700 font-semibold">Completed Schedules</h2>
+                                    {loading ? (
+                                        <div className="flex items-center justify-center gap-2 py-6">
+                                            <CircularProgress enableTrackSlot size={15} /> <span>Loading schedules...</span>
+                                        </div>
+                                    ) : error ? (
+                                        <Alert severity="error">{error}</Alert>
+                                    ) : completedSchedules?.length === 0 ? (
+                                        <p className="py-4 text-gray-500 text-center">No schedules found.</p>
+                                    ) : (
+                                        <div className="overflow-auto scrollbar-thin rounded-md border border-gray-200">
 
-                <div className="w-full lg:w-80 flex flex-col items-center border border-gray-300 bg-white rounded-md p-6">
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="text-center p-6 rounded-full bg-gray-300 border text-2xl font-bold uppercase">
-                            JD
-                        </span>
-                        <Typography variant="h6" className="mt-2">
-                            John Doe
-                        </Typography>
-                        <Chip label="CameraMan" size="small" className="mt-1" />
-                    </div>
-                    <Divider sx={{ width: '100%', my: 2 }} />
-                    <div className="text-sm text-gray-600 w-full mb-4">
-                        <p className="flex justify-between">
-                            <span>Total Schedules:</span>
-                            <span className="font-semibold">{schedules.length}</span>
-                        </p>
-                        <p className="flex justify-between mt-1">
-                            <span>Upcoming:</span>
-                            <span className="font-semibold">
-                                {schedules.filter(s => new Date(s.date) >= new Date()).length}
-                            </span>
-                        </p>
-                    </div>
-                    <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<Plus size={16} />}
-                        className="w-full"
-                    >
-                        Add Schedule
-                    </Button>
-                </div>
-            </div>
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-200">
+                                                    <tr>
+                                                        <th className="p-2 text-left">#</th>
+                                                        <th className="p-2 text-left">Type</th>
+                                                        <th className="p-2 text-left">Date</th>
+                                                        <th className="p-2 text-left">Status</th>
+                                                        <th className="p-2 text-center">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {completedSchedules?.map((item, index) => (
+                                                        <tr key={item._id} className="hover:bg-gray-200 group border-b border-gray-200 cursor-pointer">
+                                                            <td className="p-2">{index + 1}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id)} className="p-2 group-hover:text-blue-500 capitalize">{item.scheduleType}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id)} className="p-2">{formatDate(item.eventDate)}</td>
+                                                            <td onClick={() => setSelectedScheduleId(item._id)} className="p-2">
+                                                                <span
+                                                                    className={`px-3 py-1 rounded-sm text-xs font-semibold capitalize ${item.status === "completed"
+                                                                        ? "bg-green-100 text-green-700"
+                                                                        : item.status === "editing"
+                                                                            ? "bg-yellow-100 text-yellow-700"
+                                                                            : item.status === "cancelled"
+                                                                                ? "bg-red-100 text-red-700"
+                                                                                : "bg-cyan-100 text-cyan-700"
+                                                                        }`}
+                                                                >
+                                                                    {item.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-2 text-center flex justify-center gap-2">
+                                                                <IconButton size="small" color="error">
+                                                                    <Trash size={14} />
+                                                                </IconButton>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-            <Dialog open={!!selectedSchedule} onClose={handleCloseDetail} maxWidth="sm" fullWidth>
-                <DialogTitle>Schedule Details</DialogTitle>
-                <DialogContent dividers>
-                    {selectedSchedule && (
-                        <div className="space-y-2">
-                            <p><strong>ID:</strong> {selectedSchedule.id}</p>
-                            <p><strong>Date:</strong> {new Date(selectedSchedule.date).toLocaleDateString()}</p>
-                            <p><strong>Type:</strong> {selectedSchedule.type}</p>
-                            <p><strong>Description:</strong> {selectedSchedule.description || 'N/A'}</p>
-                            <p><strong>Location:</strong> {selectedSchedule.location || 'N/A'}</p>
-                            <p><strong>Status:</strong> {getStatusChip(selectedSchedule.date)}</p>
+                            <div className="w-full lg:w-80 flex flex-col items-center border border-gray-300 bg-white rounded-md p-6">
+                                <div className="flex flex-col items-center gap-2">
+                                    <span className="text-center p-6 rounded-full bg-gray-300 border text-2xl font-bold uppercase">
+                                        JD
+                                    </span>
+                                    <Typography variant="h6" className="mt-2">
+                                        John Doe
+                                    </Typography>
+                                    <Chip label="CameraMan" size="small" className="mt-1" />
+                                </div>
+                                <Divider sx={{ width: '100%', my: 2 }} />
+                                <div className="text-sm text-gray-600 w-full mb-4">
+                                    <p className="flex justify-between">
+                                        <span>Total Schedules:</span>
+                                        <span className="font-semibold">{schedules?.length}</span>
+                                    </p>
+                                    <p className="flex justify-between mt-1">
+                                        <span>Upcoming:</span>
+                                        <span className="font-semibold">
+                                            {schedules?.length}
+                                        </span>
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<Plus size={16} />}
+                                    className="w-full"
+                                >
+                                    Add Schedule
+                                </Button>
+                            </div>
                         </div>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDetail}>Close</Button>
-                </DialogActions>
-            </Dialog>
 
-            <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                    Are you sure you want to delete this schedule?
-                    {scheduleToDelete && (
-                        <div className="mt-2 text-sm text-gray-600">
-                            <p>ID: {scheduleToDelete.id}</p>
-                            <p>Type: {scheduleToDelete.type}</p>
-                            <p>Date: {new Date(scheduleToDelete.date).toLocaleDateString()}</p>
-                        </div>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDeleteCancel}>Cancel</Button>
-                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-                        Delete
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </div>
+                    </div>)}
+        </>
     );
 };
 

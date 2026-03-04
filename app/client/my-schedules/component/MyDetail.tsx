@@ -1,0 +1,253 @@
+import { ISchedule } from '@/types/models/Schedule';
+import { ArrowLeft, Check } from 'lucide-react';
+import React from 'react'
+import { IUser } from '../../../../types/models/user';
+import { formatDate as formatCalendarDate } from "@/lib/calendar";
+import { useCalendar } from '@/context/CalendarContext';
+import { Box } from '@mui/material';
+
+interface MyDetailSectionProps {
+  user?: IUser;
+  schedules: ISchedule[];
+  selectedSchedule?: ISchedule;
+  setSelectedScheduleId?: React.Dispatch<React.SetStateAction<string>>;
+}
+const MyDetails = ({ user, schedules, selectedSchedule, setSelectedScheduleId }: MyDetailSectionProps) => {
+  const { mode } = useCalendar();
+
+  const getClientId = (client: any) =>
+    typeof client === "object" && "_id" in client
+      ? client._id.toString()
+      : client?.toString();
+
+  const populatedSchedules = schedules.filter(
+    (schedule) =>
+      getClientId(schedule.clientId) ===
+      getClientId(selectedSchedule?.clientId)
+  );
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingSchedule = populatedSchedules.filter(
+    (s) =>
+      s.eventDate &&
+      new Date(s.eventDate) >= today &&
+      s.status !== "completed"
+  );
+
+  const recentSchedule = upcomingSchedule.length > 0
+    ? upcomingSchedule.sort(
+      (a, b) => new Date(a.eventDate!).getTime() - new Date(b.eventDate!).getTime()
+    )[0]
+    : undefined;
+
+  let remainingDays: number | null = null;
+  if (recentSchedule?.eventDate) {
+    const diffMs = new Date(recentSchedule.eventDate).getTime() - Date.now();
+    remainingDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);
+
+  return (
+    <div className="w-full flex flex-col items-center gap-8 min-h-screen overflow-hidden">
+      <div className="w-full flex items-center gap-2">
+        <span
+          onClick={() => setSelectedScheduleId && setSelectedScheduleId("")}
+          className="flex items-center justify-center p-2 rounded-full hover:border border-gray-300 transition-all duration-300 cursor-pointer"
+        >
+          <ArrowLeft size={20} />
+        </span>
+
+        <div className="flex flex-col">
+          <span className="text-base font-serif font-light text-gray-600">
+            My Details:
+          </span>
+          <em className="text-sm font-serif font-light">
+            Details about this client is provided here.
+          </em>
+        </div>
+      </div>
+      <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col flex-1 items-center gap-6 border border-gray-300 rounded-md p-6">
+
+          <div className="w-full flex items-center gap-1">
+            <hr className='flex-1 h-1 w-full text-gray-300' />
+            <Box
+              className="flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 border-2 border-purple-400 shadow-sm"
+            >
+              <span className="text-2xl font-bold text-purple-700">
+                {user?.name?.charAt(0).toUpperCase() || ""}
+              </span>
+            </Box>
+            <hr className='flex-1 h-1 w-full text-gray-300' />
+          </div>
+          <div className="w-full flex flex-col gap-2">
+            <div className="w-full flex items-center justify-between border border-gray-300 rounded-md bg-gray-100 px-3 py-1">
+              <span>Name:</span>
+              <em>{user?.name}</em>
+            </div>
+            <div className="w-full flex items-center justify-between border border-gray-300 rounded-md bg-gray-100 px-3 py-1">
+              <span>Phone:</span>
+              <em>{user?.phone}</em>
+            </div>
+            <div className="w-full flex items-center justify-between border border-gray-300 rounded-md bg-gray-100 px-3 py-1">
+              <span>Email:</span>
+              <em>{user?.email}</em>
+            </div>
+          </div>
+          {recentSchedule && (
+            <div className="w-full flex flex-col gap-3 border border-gray-300 p-3 rounded-md">
+              <div className="flex items-center justify-between">
+                <p className="text-normal text-center flex gap-1 font-medium font-serif group">UpComming <span className='flex group-hover:hidden'>...</span> <span className='hidden group-hover:flex'>Schedule</span> </p>
+                <span className='text-sm bg-cyan-100 text-cyan-700 px-3 rounded-md font-bold'>{remainingDays === 0 ? (
+                  <span className="text-red-500">Today</span>
+                ) : (
+                  <div className="">
+                    {remainingDays}  days left
+                  </div>
+                )}</span>
+              </div>
+              <ul className='w-full flex flex-col gap-2 items-center'>
+                <li className='w-full flex items-center justify-between'>
+                  <div className="flex items-center gap-1">
+                    <Check size={15} className='text-green-500' />
+                    <span className="text-sm font-light">Type</span>
+                  </div>
+                  <span className="text-xs font-extralight bg-gray-100 rounded-md border border-gray-500 px-3 ">{recentSchedule?.scheduleType?.toUpperCase()}</span>
+                </li>
+                <li className='w-full flex items-center justify-between'>
+                  <div className="flex items-center gap-1">
+                    <Check size={15} className='text-green-500' />
+                    <span className="text-sm font-light">Event Date</span>
+                  </div>
+                  <span
+                    className="text-xs font-extra-light cursor-pointer underline hover:text-blue-600"
+                  >
+                    {selectedSchedule?.eventDate ? (
+                      <p className="text-sm">
+                        {formatDate(selectedSchedule?.eventDate)}
+                      </p>
+                    ) : (
+                      <p className='text-sm'>not set</p>
+                    )}
+                  </span>
+                </li>
+                <li className='w-full flex items-center justify-between'>
+                  <div className="flex items-center gap-1">
+                    <Check size={15} className='text-green-500' />
+                    <span className="text-sm font-light">Editing Date</span>
+                  </div>
+                  <span
+                    className="text-xs font-extra-light cursor-pointer underline hover:text-blue-600"
+
+                  >
+                    {selectedSchedule?.editingDate ? (
+                      <p className="text-sm">
+                        {formatDate(selectedSchedule?.editingDate)}
+                      </p>
+                    ) : (
+                      <p className='text-sm'>not set</p>
+                    )}
+                  </span>
+                </li>
+                <li className='w-full flex items-center justify-between'>
+                  <div className="flex items-center gap-1">
+                    <Check size={15} className='text-green-500' />
+                    <span className="text-sm font-light">Delivery Date</span>
+                  </div>
+                  <span
+                    className="text-xs font-extra-light cursor-pointer underline hover:text-blue-600"
+
+                  >
+                    {selectedSchedule?.deliveryDate ? (
+                      <p className="text-sm">
+                        {formatDate(selectedSchedule?.deliveryDate)}
+                      </p>
+                    ) : (
+                      <p className='text-sm'>not set</p>
+                    )}
+                  </span>
+                </li>
+                {recentSchedule?.notes && (
+                  <li className='w-full flex flex-col items-center bg-gray-100 border border-gray-200 rounded-md p-3 mt-3 justify-between'>
+                    <span className="text-base font-light font-serif underline mb-3">Additional Notes</span>
+                    <span className="text-sm text-amber-500 font-extralight font-serif">{recentSchedule?.notes}</span>
+                  </li>
+                )}
+                <li className="w-full flex flex-col mt-3 gap-2">
+                  <hr className='w-full text-gray-300 h-1' />
+                  <span className='w-full flex items-center justify-between'>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-light">Status</span>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-sm text-xs font-extralight capitalize ${recentSchedule?.status === "completed"
+                        ? "bg-green-100 text-green-700"
+                        : recentSchedule?.status === "editing"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : recentSchedule?.status === "cancelled"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-cyan-100 text-cyan-700"
+                        }`}
+                    >
+                      {recentSchedule?.status}</span>
+                  </span>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col flex-2 h-100 border border-gray-300 rounded-md">
+
+          <div className="p-5 border-b border-gray-300">
+            <h2 className="text-xl font-semibold text-gray-800 text-center font-serif">
+              Schedule List
+            </h2>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin">
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {populatedSchedules.map((schedule, index) => (
+                <div
+                  key={index}
+                  className="w-full rounded-lg border border-gray-300 bg-white p-5 hover:bg-gray-50 transition-all duration-200"
+                >
+                  <div className="relative flex flex-col gap-y-3 text-sm">
+                    <span className="absolute -top-7 -left-7 rounded-full border border-gray-300 flex items-center justify-center px-1 bg-purple-500 text-white font-bold">{index + 1}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-600">Event Type</span>
+                      <span className="text-gray-800 font-semibold">{schedule.scheduleType}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-600">Event Date</span>
+                      <span className="text-gray-800">{formatDate(schedule.eventDate)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-600">Editing Date</span>
+                      <span className="text-gray-800">{formatDate(schedule.editingDate)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-600">Delivery Date</span>
+                      <span className="text-gray-800">{formatDate(schedule.deliveryDate)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-600">Status</span>
+                      <span className="text-gray-800 text-sm bg-cyan-100 rounded-md px-3 capitalize">{schedule.status}</span>
+
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default MyDetails

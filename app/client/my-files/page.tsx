@@ -36,8 +36,8 @@ const MyFiles = () => {
     const selectedClientId = currentUser.loggedInUser?.id || null;
 
     const fetchFolders = async (clientId: string, status: string) => {
-        setLoadingFolder(true);
         try {
+            setLoadingFolder(true);
             const response = await axios.get<IFolder[]>("/api/folders", {
                 params: {
                     clientId,
@@ -71,7 +71,10 @@ const MyFiles = () => {
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col lg:flex-row justify-between gap-3">
                         <Typography variant="h5" component="h1" className="font-semibold">
-                            My Files
+                            My Files:
+                            <p className="text-sm text-gray-500">
+                                Manage and organize your files here.
+                            </p>
                         </Typography >
                         <div className="flex flex-wrap gap-2">
                             {Tabs.map((tab) => (
