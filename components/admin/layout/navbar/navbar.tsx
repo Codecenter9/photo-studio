@@ -4,17 +4,26 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { Bell, Menu, Search } from "lucide-react";
-import Button from "@mui/material/Button";
+import { Bell, Menu } from "lucide-react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { ISettings } from "@/types/models/settings";
+import { formatDate } from "@/lib/calendar";
+import { useCalendar } from "@/context/CalendarContext";
 
 interface NavbarProps {
+    settings?: ISettings;
     setIsOpen: (open: boolean) => void;
     collapsed: boolean;
 }
-const Navbar = ({ collapsed, setIsOpen }: NavbarProps) => {
+const Navbar = ({ settings, collapsed, setIsOpen }: NavbarProps) => {
     const router = useRouter();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const { mode } = useCalendar();
+    const { loggedInUser } = useCurrentUser();
+
+    const today = new Date();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -39,31 +48,27 @@ const Navbar = ({ collapsed, setIsOpen }: NavbarProps) => {
     transition-all duration-300 ease-in-out
     ${collapsed ? "md:left-24" : "lg:left-64"}
   `}
-        >   <div className="items-center hidden lg:flex bg-white rounded-md px-3 py-2 w-64">
-                <Search size={16} className="mr-2" />
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="bg-transparent border-none focus:outline-none text-sm w-full"
-                />
+        >   <div className=" hidden lg:flex flex-col gap-0 w-64">
+                <span className="text-xl font-serif">{settings?.studioName}</span>
+                <span className="text-sm font-serif">Today: {formatDate(today, mode)}</span>
             </div>
             <div className="items-center flex lg:hidden cursor-pointer" onClick={() => setIsOpen(true)}>
                 <Menu size={20} />
             </div>
 
             <div className="flex items-center gap-4">
-                <Button className="relative p-2 bg-white hover:bg-gray-50 rounded-full transition">
+                <span className="relative p-2 bg-gray-50 cursor-pointer hover:bg-gray-100 rounded-full transition">
                     <Bell size={16} className="text-gray-950" />
-                    <span className="absolute top-1 right-1 block w-2 h-2 bg-red-500 rounded-full"></span>
-                </Button>
+                    <p className="absolute top-1 right-1 block w-2 h-2 bg-red-500 rounded-full"></p>
+                </span>
 
                 <div className="relative" ref={dropdownRef}>
-                    <Button
+                    <span
                         onClick={() => setDropdownOpen(!dropdownOpen)}
-                        className="flex items-center gap-2 bg-white hover:bg-gray-50 rounded-md py-1 px-2 cursor-pointer transition"
+                        className=" flex items-center bg-gray-50 hover:bg-gray-100 border border-purple-500 rounded-full px-2 py-1 cursor-pointer transition"
                     >
-                        <span className=" text-gray-950 text-sm">John Doe</span>
-                    </Button>
+                        <p className=" text-gray-950 text-lg">{loggedInUser?.name.substring(0, 2)}</p>
+                    </span>
 
                     {dropdownOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white text-gray-950 rounded-md shadow-lg py-1 z-10">

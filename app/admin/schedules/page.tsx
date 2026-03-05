@@ -207,7 +207,7 @@ const SchedulesPage = () => {
                                                                     {item.status}
                                                                 </span>
                                                             </td>
-                                                            <td className="p-2 text-center flex justify-center gap-2">
+                                                            <td className="p-2">
                                                                 <IconButton onClick={() => (
                                                                     setOpen(true),
                                                                     setEditingScheduleId(item._id)
@@ -301,7 +301,7 @@ const SchedulesPage = () => {
                                                                     {item.status}
                                                                 </span>
                                                             </td>
-                                                            <td className="p-2 text-center flex justify-center gap-2">
+                                                            <td className="p-2">
                                                                 <IconButton onClick={() => (
                                                                     setOpen(true),
                                                                     setEditingScheduleId(item._id)

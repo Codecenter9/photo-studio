@@ -1,18 +1,23 @@
 "use client";
 
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { ISettings } from "@/types/models/settings";
 import { Album, Calendar, ChevronLeft, LayoutDashboard, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface SidebarProps {
+    settings?: ISettings;
     isOpen: boolean;
     collapsed: boolean;
     setCollapsed: (collapsed: boolean) => void;
     setIsOpen: (open: boolean) => void;
 }
 
-const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }: SidebarProps) => {
+const Sidebar = ({ settings, isOpen, setIsOpen, collapsed, setCollapsed }: SidebarProps) => {
     const pathname = usePathname();
+
+    const { loggedInUser } = useCurrentUser();
 
     const menuItems = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -46,11 +51,11 @@ const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }: SidebarProps) =
                 <div>
                     <div className="p-6 border-b border-gray-700 flex flex-col items-center">
                         <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center text-2xl font-bold mb-3">
-                            JD
+                            {loggedInUser?.name.substring(0, 1)}
                         </div>
                         {!collapsed && (
                             <>
-                                <h3 className="text-sm font-medium">John Doe</h3>
+                                <h3 className="text-sm font-medium">{loggedInUser?.name}</h3>
                                 <p className="text-xs text-gray-400">Admin</p>
                             </>
                         )}
@@ -100,7 +105,7 @@ const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }: SidebarProps) =
                     <div className="hidden md:block p-4 border-t border-gray-700 text-xs text-gray-400 text-center">
                         {!collapsed ? (
                             <>
-                                <p>© 2025 Your Company</p>
+                                <p>© 2025 {settings?.studioName}</p>
                             </>
                         ) : (
                             <p className="text-xs">©</p>

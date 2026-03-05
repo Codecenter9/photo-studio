@@ -292,59 +292,105 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                 />
                             </span>
                         </div>
+                        {folderStatus === "Edited" && (
+                            <div className="flex gap-1 items-center">
+                                <div
+                                    onClick={() => {
+                                        if (selectedPhotos.length === 0) {
+                                            alert("Please select at least 1 file");
+                                            return;
+                                        }
+                                        handleShareSelected();
+                                    }}
+                                    title="Share"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                >
+                                    <span className="hidden lg:flex">
+                                        Share
+                                    </span>
+                                    <span className="">
+                                        <Share2 size={18} />
+                                    </span>
+                                </div>
+                                <div
+                                    onClick={() => {
+                                        if (selectedPhotos.length === 0) {
+                                            alert("Please select at least 1 file");
+                                            return;
+                                        }
+                                        handleDownloadSelected();
+                                    }}
+                                    title="Download"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                >
+                                    <span className="hidden lg:flex ">
+                                        Download
+                                    </span>
+                                    <span className="">
+                                        <Download size={18} />
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
-                        <div
-                            onClick={() => {
-                                if (selectedPhotos.length === 0) {
-                                    alert("Please select at least 1 file");
-                                    return;
-                                }
-                                handleShareSelected();
-                            }}
-                            title="Share"
-                            className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
-                        >
-                            <span className="hidden lg:flex">
-                                Share
-                            </span>
-                            <span className="">
-                                <Share2 size={18} />
-                            </span>
-                        </div>
-
-                        <div
-                            onClick={() => {
-                                if (selectedPhotos.length === 0) {
-                                    alert("Please select at least 1 file");
-                                    return;
-                                }
-                                handleDownloadSelected();
-                            }}
-                            title="Download"
-                            className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
-                        >
-                            <span className="hidden lg:flex ">
-                                Download
-                            </span>
-                            <span className="">
-                                <Download size={18} />
-                            </span>
-                        </div>
                         {folderStatus === "UnEdited" && (
-                            <div onClick={() => {
-                                if (selectedPhotos.length === 0) {
-                                    alert("Please select at least 1 file");
-                                    return;
-                                }
-                                handleSelectedSubmit();
-                            }}
-                                title="Delete"
-                                className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
-                            >
+                            <div className="flex gap-1 items-center">
+                                {selectedClient?.permissions?.canShare && (
+                                    <div
+                                        onClick={() => {
+                                            if (selectedPhotos.length === 0) {
+                                                alert("Please select at least 1 file");
+                                                return;
+                                            }
+                                            handleShareSelected();
+                                        }}
+                                        title="Share"
+                                        className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    >
+                                        <span className="hidden lg:flex">
+                                            Share
+                                        </span>
+                                        <span className="">
+                                            <Share2 size={18} />
+                                        </span>
+                                    </div>
+                                )}
 
-                                <span className="">
-                                    {submitting ? "Submiting..." : "Submit"}
-                                </span>
+                                {(selectedClient?.permissions?.canDownload) && (
+                                    <div
+                                        onClick={() => {
+                                            if (selectedPhotos.length === 0) {
+                                                alert("Please select at least 1 file");
+                                                return;
+                                            }
+                                            handleDownloadSelected();
+                                        }}
+                                        title="Download"
+                                        className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    >
+                                        <span className="hidden lg:flex ">
+                                            Download
+                                        </span>
+                                        <span className="">
+                                            <Download size={18} />
+                                        </span>
+                                    </div>
+                                )}
+                                <div onClick={() => {
+                                    if (selectedPhotos.length === 0) {
+                                        alert("Please select at least 1 file");
+                                        return;
+                                    }
+                                    handleSelectedSubmit();
+                                }}
+                                    title="Delete"
+                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                                >
+
+                                    <span className="">
+                                        {submitting ? "Submiting..." : "Submit"}
+                                    </span>
+                                </div>
                             </div>
                         )}
                     </div>

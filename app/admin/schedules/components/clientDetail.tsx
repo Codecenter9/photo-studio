@@ -1,12 +1,13 @@
 import { ISchedule } from '@/types/models/Schedule';
-import { IUser } from '@/types/models/user';
-import { Box } from '@mui/material';
-import { ArrowLeft, Check } from 'lucide-react'
-import React, { useState } from 'react'
+import { IUser, IUserPermissions } from '@/types/models/user';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, Switch } from '@mui/material';
+import { ArrowLeft, Check, Settings } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { formatDate as formatCalendarDate } from "@/lib/calendar";
 import { useCalendar } from '@/context/CalendarContext';
 import ScheduleDialog from './editSchedule';
 import axios from 'axios';
+
 interface ClientDetailSectionProps {
     schedules: ISchedule[];
     fetchSchedules: () => void;
@@ -16,6 +17,16 @@ interface ClientDetailSectionProps {
 const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelectedScheduleId }: ClientDetailSectionProps) => {
 
     const { mode } = useCalendar();
+
+    const [openModal, setOpenModal] = useState(false);
+
+    const [permissions, setPermissions] = useState<IUserPermissions>({
+        canDownload: false,
+        canShare: false,
+    });
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedDates, setSelectedDates] = useState<{
@@ -37,13 +48,57 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
             });
 
             setSelectedDates(prev => ({ ...prev, [currentEditingField]: date }));
-
+            setSnackbarMessage("Date set successfully");
+            setSnackbarOpen(true);
             fetchSchedules();
         } catch {
             console.error("Update schedule error:");
             alert("Failed to update schedule: ");
         } finally {
             setCurrentEditingField(null);
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleChange = (
+        field: keyof IUserPermissions,
+        value: boolean
+    ) => {
+        setPermissions((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    useEffect(() => {
+        if (selectedSchedule?.clientId) {
+            const client = selectedSchedule.clientId as IUser;
+
+            setPermissions({
+                canDownload: client.permissions?.canDownload ?? false,
+                canShare: client.permissions?.canShare ?? false,
+            });
+        }
+    }, [selectedSchedule]);
+
+    const hanldeSaveSetting = async () => {
+        if (!selectedSchedule?.clientId) return;
+        setIsSubmitting(true);
+
+        const clientId = (selectedSchedule.clientId as IUser)._id;
+
+        try {
+            await axios.put(`/api/auth/user/${clientId}`, {
+                permissions,
+            });
+
+            setSnackbarMessage("Setting saved successfully");
+            setSnackbarOpen(true);
+            setOpenModal(false);
+        } catch (error) {
+            console.error("Update schedule error:", error);
+            alert("Failed to update setting: ");
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -93,14 +148,22 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                     <ArrowLeft size={20} />
                 </span>
 
-                <div className="flex flex-col">
-                    <span className="text-base font-light text-gray-600">
-                        Details:{" "}
-                        <i className="underline font-light">{(selectedSchedule?.clientId as IUser)?.name}</i>:{" "}
-                    </span>
-                    <em className="text-sm font-light">
-                        Details about this client is provided here.
-                    </em>
+                <div className="w-full flex justify-between">
+                    <div className="flex flex-col font-serif">
+                        <span className="text-base font-light text-gray-600">
+                            Details:{" "}
+                            <i className="underline font-light">{(selectedSchedule?.clientId as IUser)?.name}</i>:{" "}
+                        </span>
+                        <em className="text-sm font-light">
+                            Details about this client is provided here.
+                        </em>
+                    </div>
+                    <Button onClick={() => setOpenModal(true)} variant='outlined' size='small'>
+                        <div className="flex items-center justify-center gap-2">
+                            <Settings size={18} />
+                            <span>Settings</span>
+                        </div>
+                    </Button>
                 </div>
             </div>
             <div className="w-full flex flex-col lg:flex-row gap-6">
@@ -296,6 +359,62 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                     isSubmitting={isSubmitting}
                 />
             )}
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity="success"
+                    sx={{ width: "100%" }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+
+            <div className="flex items-center justify-center">
+                <Dialog maxWidth="sm" open={openModal} onClose={() => setOpenModal(false)} >
+                    <DialogTitle><span className="text-normal font-serif">Update Settings</span></DialogTitle>
+                    <hr className='h-1 text-gray-300' />
+                    <DialogContent>
+                        <div className="flex w-75 md:w-100 flex-col items-center gap-3">
+                            <div className="w-full flex items-center justify-between border border-purple-500 rounded-md px-4 py-1">
+                                <span className="text-sm font-medium">
+                                    Allow to download files
+                                </span>
+
+                                <Switch
+                                    checked={permissions.canDownload}
+                                    onChange={(e) =>
+                                        handleChange("canDownload", e.target.checked)
+                                    }
+                                />
+                            </div>
+                            <div className="w-full flex items-center justify-between border border-purple-500 rounded-md px-4 py-1">
+                                <span className="text-sm font-medium">
+                                    Allow to share files
+                                </span>
+
+                                <Switch
+                                    checked={permissions.canShare}
+                                    onChange={(e) =>
+                                        handleChange("canShare", e.target.checked)
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                        <Button onClick={hanldeSaveSetting} color="info">
+                            {isSubmitting ? "Saving..." : "Save"}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
         </div>
     )
 }

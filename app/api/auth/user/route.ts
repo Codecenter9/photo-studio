@@ -29,10 +29,10 @@ export async function POST(req: Request) {
 
     if (!name) errors.name = "Name is required";
     if (!email) errors.email = "Email is required";
-    if (!phone) errors.phone = "Phone is required";
     if (!password) errors.password = "Password is required";
 
     if (Object.keys(errors).length > 0) {
+      console.log(errors)
       return NextResponse.json(
         {
           message: "Validation failed",

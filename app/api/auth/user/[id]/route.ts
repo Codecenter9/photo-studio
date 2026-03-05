@@ -6,6 +6,48 @@ import cloudinary from "@/lib/cloudinary";
 import User from "@/model/User";
 import Schedule from "@/model/Schedule";
 
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> } 
+) {
+    await dbConnection();
+     const { id } = await params;
+
+      if (!id) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+  try {
+  
+    const body = await req.json();
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      body,           
+      { returnDocument:'after' }  
+    );
+    if (!updatedUser) {
+      return NextResponse.json(
+       { message: "User not found" },
+      { status: 404 }
+    );
+    }
+
+    return NextResponse.json(
+       { message: "Updated successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Update user error:", error);
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
  req: Request,
   { params }: { params: Promise<{ id: string }> } 

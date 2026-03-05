@@ -1,20 +1,69 @@
 import { Schema, models, model } from "mongoose";
 
-const userSchema = new Schema(
+const UserSchema = new Schema(
   {
-    name: String,
-    email: String,
-    password: String,
-    phone:String,
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 100,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+      select: false, 
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+    },
+
     role: {
-    type: String,
-    enum: ["admin", "client","user"],
-    default: "user",
+      type: String,
+      enum: ["admin", "client", "user"],
+      default: "user",
+    },
+
+    permissions: {
+      canDownload: {
+        type: Boolean,
+        default: false,
+      },
+
+      canShare: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "blocked"],
+      default: "active",
+    },
+
+    avatar: {
+      type: String, 
+    },
+
   },
-  },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-const User = models.User || model("User", userSchema);
+const User = models.User || model("User", UserSchema);
 
 export default User;
