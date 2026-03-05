@@ -68,7 +68,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     width={360}
                                     height={300}
                                     sizes="100vw"
-                                    className="w-full h-64 object-cover"
+                                    className="w-full h-40 object-cover"
                                     crop="fill"
                                     gravity="auto"
                                 />
@@ -80,7 +80,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     controls
                                     autoPlay={false}
                                     muted={false}
-                                    className="w-full h-64 object-cover"
+                                    className="w-full h-40 object-cover"
                                     colors={{
                                         accent: "#ff0000",
                                         base: "#00ff00",

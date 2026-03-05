@@ -1,7 +1,7 @@
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { IFolder } from '@/types/models/folder';
-import { Button, Checkbox, IconButton, Typography } from '@mui/material';
-import { ArrowLeft, Download, Filter, Send, Share2 } from 'lucide-react';
+import { Button, Checkbox, Typography } from '@mui/material';
+import { ArrowLeft, Download, Filter, Share2 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ClientPhotoDisplay from './clientPhotoDisplay';
 import 'next-cloudinary/dist/cld-video-player.css';
@@ -251,7 +251,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                     </span>
 
                     <span className="flex flex-col gap-0 font-serif">
-                        <b>Selected Folder:</b>
+                        <b>Folder:</b>
                         <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedFolder?.name}</i>
                     </span>
                 </div>
@@ -344,9 +344,6 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
 
                                 <span className="">
                                     {submitting ? "Submiting..." : "Submit"}
-                                </span>
-                                <span className="">
-                                    <Send size={18} />
                                 </span>
                             </div>
                         )}

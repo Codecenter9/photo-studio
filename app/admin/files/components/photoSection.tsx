@@ -246,16 +246,10 @@ const PhotoSection = ({
                         <ArrowLeft size={20} />
                     </span>
 
-                    <div className="flex flex-col gap-0">
-                        <span className="flex gap-1 items-center font-serif">
-                            <b>Folder:</b>
-                            <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedFolder?.name.slice(0, 7)}</i>
-                        </span>
-                        <span className="flex gap-1 items-center font-serif">
-                            <b>client:</b>
-                            <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedClient?.name.slice(0, 7)}</i>
-                        </span>
-                    </div>
+                    <span className="flex flex-col gap-1 items-center font-serif">
+                        <b>client:</b>
+                        <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedClient?.name.slice(0, 7)}</i>
+                    </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
