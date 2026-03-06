@@ -340,7 +340,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                 )}
                                 <span className="flex lg:hidden rounded-full bg-gray-200">
                                     <Checkbox
-                                        size="medium"
+                                        size="small"
                                         checked={
                                             visiblePhotos.length > 0 &&
                                             visiblePhotos.every(p => selectedPhotos.includes(p.publicId))

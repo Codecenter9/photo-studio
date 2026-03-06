@@ -161,7 +161,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                     <Button onClick={() => setOpenModal(true)} variant='outlined' size='small'>
                         <div className="flex items-center justify-center gap-2">
                             <Settings size={18} />
-                            <span>Settings</span>
+                            <span className='hidden lg:flex'>Settings</span>
                         </div>
                     </Button>
                 </div>

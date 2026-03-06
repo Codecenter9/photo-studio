@@ -241,12 +241,12 @@ const PhotoSection = ({
                 <div className="flex gap-2 items-center">
                     <span
                         onClick={() => setSelectedFolderId && setSelectedFolderId(null)}
-                        className="flex items-center justify-center p-2 rounded-full hover:border border-gray-300 transition-all duration-300 cursor-pointer"
+                        className="flex items-center justify-center p-1 rounded-full border bg-gray-200 hover:bg-gray-300 border-gray-300 transition-all duration-300 cursor-pointer"
                     >
                         <ArrowLeft size={20} />
                     </span>
 
-                    <span className="flex flex-col gap-1 items-center font-serif">
+                    <span className="hidden lg:flex flex-col gap-1 items-center font-serif">
                         <b>client:</b>
                         <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedClient?.name.slice(0, 7)}</i>
                     </span>

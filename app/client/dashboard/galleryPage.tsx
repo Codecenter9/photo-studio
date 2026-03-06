@@ -235,7 +235,7 @@ export default function GalleryPage() {
                                 )}
                                 <span className="flex lg:hidden">
                                     <Checkbox
-                                        size="medium"
+                                        size="small"
                                         checked={
                                             filteredFiles.length > 0 &&
                                             filteredFiles.every(p => selectedPhotos.includes(p.publicId))

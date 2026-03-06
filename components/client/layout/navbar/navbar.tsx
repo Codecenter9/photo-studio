@@ -7,7 +7,12 @@ import { useState } from "react";
 import { Button } from "@mui/material";
 import { Camera, Menu as MenuIcon, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-const ClientNavbar = () => {
+import { ISettings } from "@/types/models/settings";
+
+interface ClientNavbarPropes {
+    settings?: ISettings;
+}
+const ClientNavbar = ({ settings }: ClientNavbarPropes) => {
     const router = useRouter();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -33,7 +38,11 @@ const ClientNavbar = () => {
                     <Link href="/client" className="flex items-center gap-2 text-xl font-bold text-gray-800 transition-transform">
                         <Camera size={28} className="text-blue-600 group-hover:text-blue-700 transition-colors" />
                         <span className="bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                            PhotoApp
+                            {settings?.studioName ? (
+                                settings?.studioName
+                            ) : (
+                                <p>PhotoStudio</p>
+                            )}
                         </span>
                     </Link>
                 </div>
@@ -65,7 +74,9 @@ const ClientNavbar = () => {
 
                 <div className="hidden lg:block">
                     <div className="flex items-center gap-3">
-                        <Button variant='outlined' className='w-max'>Book New Schedule</Button>
+                        {settings?.allowClientBooking && (
+                            <Button variant='outlined' className='w-max'>Book New Schedule</Button>
+                        )}
                         <Button
                             onClick={handleLogout}
                             variant="contained"
@@ -105,13 +116,15 @@ const ClientNavbar = () => {
                         >
                             My Files
                         </Link>
-                        <Link
-                            href="/client/my-schedules"
-                            onClick={closeMobileMenu}
-                            className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client/my-schedules" ? "text-blue-500" : ""
-                                }`}   >
-                            My Schedules
-                        </Link>
+                        {settings?.allowClientBooking && (
+                            <Link
+                                href="/client/my-schedules"
+                                onClick={closeMobileMenu}
+                                className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client/my-schedules" ? "text-blue-500" : ""
+                                    }`}   >
+                                My Schedules
+                            </Link>
+                        )}
                     </div>
 
                     <div className="w-full flex gap-3 items-center">
