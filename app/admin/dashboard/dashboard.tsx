@@ -52,38 +52,47 @@ const Dashboard = () => {
         return schedule?.eventDate && new Date(schedule.eventDate).getTime() > now;
     }).length;
 
-    const isWithin24Hours = useCallback((date?: Date | string | null) => {
+    const isToday = useCallback((date?: Date | string | null) => {
         if (!date) return false;
 
-        const now = new Date().getTime();
-        const next24Hours = now + 24 * 60 * 60 * 1000;
+        const now = new Date();
+
+        const startOfToday = new Date(now);
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const startOfTomorrow = new Date(startOfToday);
+        startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
 
         const scheduleTime = new Date(date).getTime();
-        return scheduleTime >= now && scheduleTime <= next24Hours;
+
+        return (
+            scheduleTime >= startOfToday.getTime() &&
+            scheduleTime < startOfTomorrow.getTime()
+        );
     }, []);
 
     const todayPhotoShotSchedules = useMemo(
         () =>
             schedules.filter((schedule) =>
-                isWithin24Hours(schedule.eventDate)
+                isToday(schedule.eventDate)
             ),
-        [schedules, isWithin24Hours]
+        [schedules, isToday]
     );
 
     const todayEditingSchedules = useMemo(
         () =>
             schedules.filter((schedule) =>
-                isWithin24Hours(schedule.editingDate)
+                isToday(schedule.editingDate)
             ),
-        [schedules, isWithin24Hours]
+        [schedules, isToday]
     );
 
     const todayDeliverySchedules = useMemo(
         () =>
             schedules.filter((schedule) =>
-                isWithin24Hours(schedule.deliveryDate)
+                isToday(schedule.deliveryDate)
             ),
-        [schedules, isWithin24Hours]
+        [schedules, isToday]
     );
 
     const totalTodaySchedules =

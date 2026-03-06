@@ -116,15 +116,13 @@ const ClientNavbar = ({ settings }: ClientNavbarPropes) => {
                         >
                             My Files
                         </Link>
-                        {settings?.allowClientBooking && (
-                            <Link
-                                href="/client/my-schedules"
-                                onClick={closeMobileMenu}
-                                className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client/my-schedules" ? "text-blue-500" : ""
-                                    }`}   >
-                                My Schedules
-                            </Link>
-                        )}
+                        <Link
+                            href="/client/my-schedules"
+                            onClick={closeMobileMenu}
+                            className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client/my-schedules" ? "text-blue-500" : ""
+                                }`}   >
+                            My Schedules
+                        </Link>
                     </div>
 
                     <div className="w-full flex gap-3 items-center">
@@ -139,7 +137,9 @@ const ClientNavbar = ({ settings }: ClientNavbarPropes) => {
                         >
                             Log out
                         </Button>
-                        <Button variant='outlined' className='w-full'>Book New Schedule</Button>
+                        {settings?.allowClientBooking && (
+                            <Button variant='outlined' className='w-full'>Book New Schedule</Button>
+                        )}
                     </div>
                 </div>
             )}

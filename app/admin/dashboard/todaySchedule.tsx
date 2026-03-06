@@ -111,15 +111,15 @@ const TodaySchedule = ({ schedules, loading, error, setSelectedScheduleId }: Tod
                             }
                             size="small"
                         >
-                            {tab.label} (
+                            {tab.label}
                             <div className="hidden lg:flex">
-                                {tab.key === "photoshot"
+                                ({tab.key === "photoshot"
                                     ? todayPhotoShotSchedules.length
                                     : tab.key === "editing"
                                         ? todayEditingSchedules.length
                                         : todayDeliverySchedules.length}
+                                )
                             </div>
-                            )
                         </Button>
                     ))}
                 </div>
