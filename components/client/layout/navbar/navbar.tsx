@@ -40,6 +40,14 @@ const ClientNavbar = () => {
 
                 <div className="hidden md:flex items-center gap-8 text-gray-800 font-medium">
                     <Link
+                        href="/client"
+                        className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client" ? "text-blue-500" : ""
+                            }`}
+                    >
+                        Home
+                    </Link>
+
+                    <Link
                         href="/client/my-files"
                         className={`hover:text-blue-600 transition-all hover:scale-105 ${pathname === "/client/my-files" ? "text-blue-600" : ""
                             }`}
@@ -80,6 +88,15 @@ const ClientNavbar = () => {
             {mobileMenuOpen && (
                 <div className="md:hidden bg-gray-100/30 backdrop-blur-lg px-4 py-4 flex flex-col gap-4">
                     <div className="flex flex-col gap-3 text-gray-800 font-medium">
+                        <Link
+                            href="/client"
+                            onClick={closeMobileMenu}
+                            className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client" ? "text-blue-500" : ""
+                                }`}
+                        >
+                            Home
+                        </Link>
+
                         <Link
                             href="/client/my-files"
                             onClick={closeMobileMenu}

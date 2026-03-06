@@ -1,7 +1,6 @@
 import { ISchedule } from '@/types/models/Schedule';
 import { ArrowLeft, Check } from 'lucide-react';
 import React from 'react'
-import { IUser } from '../../../../types/models/user';
 import { formatDate as formatCalendarDate } from "@/lib/calendar";
 import { useCalendar } from '@/context/CalendarContext';
 import { Box } from '@mui/material';
@@ -12,7 +11,7 @@ interface MyDetailSectionProps {
   selectedSchedule?: ISchedule;
   setSelectedScheduleId?: React.Dispatch<React.SetStateAction<string>>;
 }
-const MyDetails = ({  schedules, selectedSchedule, setSelectedScheduleId }: MyDetailSectionProps) => {
+const MyDetails = ({ schedules, selectedSchedule, setSelectedScheduleId }: MyDetailSectionProps) => {
   const { mode } = useCalendar();
 
   const currentUser = useCurrentUser();
@@ -58,7 +57,7 @@ const MyDetails = ({  schedules, selectedSchedule, setSelectedScheduleId }: MyDe
       <div className="w-full flex items-center gap-2">
         <span
           onClick={() => setSelectedScheduleId && setSelectedScheduleId("")}
-          className="flex items-center justify-center p-2 rounded-full hover:border border-gray-300 transition-all duration-300 cursor-pointer"
+          className="flex items-center justify-center p-1 rounded-full border bg-gray-200 hover:bg-gray-300 border-gray-300 transition-all duration-300 cursor-pointer"
         >
           <ArrowLeft size={20} />
         </span>

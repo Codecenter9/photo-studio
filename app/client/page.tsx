@@ -1,9 +1,10 @@
 import React from 'react'
+import GalleryPage from './dashboard/galleryPage'
 
 const page = () => {
     return (
         <div>
-            client dashboard
+            <GalleryPage />
         </div>
     )
 }

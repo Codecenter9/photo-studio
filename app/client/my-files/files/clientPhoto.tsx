@@ -131,6 +131,36 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
         }
     };
 
+    const handleMakePublic = async () => {
+        if (selectedPhotos.length === 0) return;
+        setSubmitting(true);
+        try {
+            const updatedData = selectedPhotos.map(photoId => {
+                const photo = photos.find(p => p.publicId === photoId);
+                if (!photo) return null;
+                return {
+                    publicId: photoId,
+                    isPublic: photo.isPublic === false ? true : true,
+                };
+            }).filter(Boolean);
+
+            const photoIds = updatedData.map(u => u!.publicId);
+
+            await axios.patch("/api/photo/actions", {
+                action: "update",
+                photoIds,
+                data: { isPublic: updatedData[0]?.isPublic },
+            });
+
+            fetchPhotos();
+            setSelectedPhotos([]);
+        } catch (error) {
+            console.error("Bulk update failed", error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const handleSelectedSubmit = async () => {
         if (selectedPhotos.length === 0) return;
         setSubmitting(true);
@@ -245,12 +275,12 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                 <div className="flex gap-2 items-center">
                     <span
                         onClick={() => setSelectedFolderId && setSelectedFolderId(null)}
-                        className="flex items-center justify-center p-2 rounded-full hover:border border-gray-300 transition-all duration-300 cursor-pointer"
+                        className="flex items-center justify-center p-1 rounded-full border bg-gray-200 hover:bg-gray-300 border-gray-300 transition-all duration-300 cursor-pointer"
                     >
                         <ArrowLeft size={20} />
                     </span>
 
-                    <span className="flex flex-col gap-0 font-serif">
+                    <span className="hidden lg:flex flex-col gap-0 font-serif">
                         <b>Folder:</b>
                         <i className="px-2 bg-gray-200 w-max text-xs rounded-md font-light">{selectedFolder?.name}</i>
                     </span>
@@ -258,40 +288,74 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
 
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-1 justify-start">
-                        <Typography className="text-sm font-light flex gap-2 capitalize">
-                            <span className="px-2 py-0.5 rounded-full items-center bg-amber-100 hover:bg-amber-200">
-                                {selectedPhotos.length}
-                            </span>
-                        </Typography>
-
-                        <div
-                            className="cursor-pointer">
-                            {visiblePhotos.length > 0 &&
-                                visiblePhotos.every(p => selectedPhotos.includes(p.publicId)) ? (
-                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-red-100 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
-                                    Unselect All
+                        <div className="flex gap-1 lg:gap-2 items-center">
+                            <Typography className="flex items-center text-sm font-light gap-2 capitalize">
+                                <p className="hidden lg:flex nr-1">Selected</p>
+                                <span className="px-2 py-0.5 rounded-full items-center bg-amber-100 hover:bg-amber-200">
+                                    {selectedPhotos.length}
                                 </span>
-                            ) : (
-                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-gray-200 px-2 py-0.5 rounded-md hover:bg-gray-300 hover:text-gray-950  transition-all duration-300">
-                                    Select All
-                                </span>
-                            )}
-                            <span className="flex lg:hidden">
-                                <Checkbox
-                                    size="medium"
-                                    checked={
-                                        visiblePhotos.length > 0 &&
-                                        visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                                    }
+                            </Typography>
 
-                                    indeterminate={
-                                        visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
-                                        !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                                    }
-                                    onChange={handleSelectAllToggle}
-                                />
-                            </span>
+                            <div
+                                className="cursor-pointer">
+                                {visiblePhotos.length > 0 &&
+                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId)) ? (
+                                    <span onClick={handleSelectAllToggle} className="hidden min-w-max lg:flex items-center gap-1 bg-red-100 px-2 py-0  rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
+                                        <p>Unselect All</p>
+                                        <span className="">
+                                            <Checkbox
+                                                size="small"
+                                                checked={
+                                                    visiblePhotos.length > 0 &&
+                                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+
+                                                indeterminate={
+                                                    visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                                    !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+                                                onChange={handleSelectAllToggle}
+                                            />
+                                        </span>
+                                    </span>
+                                ) : (
+                                    <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center gap-1 bg-gray-200 px-2 py-0 rounded-md hover:bg-gray-300 hover:text-gray-950  transition-all duration-300">
+                                        <p>Select All</p>
+                                        <span className="">
+                                            <Checkbox
+                                                size="small"
+                                                checked={
+                                                    visiblePhotos.length > 0 &&
+                                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+
+                                                indeterminate={
+                                                    visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                                    !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+                                                onChange={handleSelectAllToggle}
+                                            />
+                                        </span>
+                                    </span>
+                                )}
+                                <span className="flex lg:hidden rounded-full bg-gray-200">
+                                    <Checkbox
+                                        size="medium"
+                                        checked={
+                                            visiblePhotos.length > 0 &&
+                                            visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                        }
+
+                                        indeterminate={
+                                            visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                            !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                        }
+                                        onChange={handleSelectAllToggle}
+                                    />
+                                </span>
+                            </div>
                         </div>
+
                         {folderStatus === "Edited" && (
                             <div className="flex gap-1 items-center">
                                 <div
@@ -303,7 +367,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         handleShareSelected();
                                     }}
                                     title="Share"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-1.5 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                 >
                                     <span className="hidden lg:flex">
                                         Share
@@ -321,13 +385,28 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         handleDownloadSelected();
                                     }}
                                     title="Download"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-1.5 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                 >
                                     <span className="hidden lg:flex ">
                                         Download
                                     </span>
                                     <span className="">
                                         <Download size={18} />
+                                    </span>
+                                </div>
+                                <div onClick={() => {
+                                    if (selectedPhotos.length === 0) {
+                                        alert("Please select at least 1 file");
+                                        return;
+                                    }
+                                    handleMakePublic();
+                                }}
+                                    title="Make Visibiity Public"
+                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-1.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                                >
+
+                                    <span className="">
+                                        {submitting ? "Submiting..." : "Make Public"}
                                     </span>
                                 </div>
                             </div>
@@ -383,7 +462,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                     }
                                     handleSelectedSubmit();
                                 }}
-                                    title="Delete"
+                                    title="Change Status"
                                     className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
                                 >
 

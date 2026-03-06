@@ -15,6 +15,7 @@ export interface IFile {
   format?: string;
 
   uploadedBy: string;
+  isPublic:boolean;
 
   status: "UnEdited" | "Edited" | "Rejected";
 

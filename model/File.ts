@@ -62,7 +62,12 @@ const fileSchema = new Schema(
     type: String,
     enum: ["Selected", "UnSelected", "Approved", "Rejected"],
     default: "UnSelected",
-  }
+  },
+  
+  isPublic: {   
+     type: Boolean,
+    default: true,
+    },
 },
   {
     timestamps: true, 
