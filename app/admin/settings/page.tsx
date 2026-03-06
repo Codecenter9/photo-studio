@@ -61,7 +61,7 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="w-[50%] flex flex-col gap-8 pb-12">
+        <div className="w-full lg:w-[50%] flex flex-col gap-8 pb-12">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold">Settings</h1>
