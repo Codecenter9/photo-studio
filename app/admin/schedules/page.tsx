@@ -38,7 +38,7 @@ const SchedulesPage = () => {
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-
+    
     const { mode } = useCalendar();
     const [scheduleDate, setScheduleDate] = useState<Date>(new Date());
 

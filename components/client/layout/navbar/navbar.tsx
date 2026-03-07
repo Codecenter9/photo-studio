@@ -47,10 +47,10 @@ const ClientNavbar = ({ settings }: ClientNavbarPropes) => {
                     </Link>
                 </div>
 
-                <div className="hidden md:flex items-center gap-8 text-gray-800 font-medium">
+                <div className="hidden md:flex items-center gap-3 text-gray-800 font-medium">
                     <Link
                         href="/client"
-                        className={`py-1 px-3 rounded-lg hover:bg-blue-50 transition-colors ${pathname === "/client" ? "text-blue-500" : ""
+                        className={`py-1 px-3 rounded-md hover:bg-blue-50 transition-colors ${pathname === "/client" ? "text-blue-500" : ""
                             }`}
                     >
                         Home
@@ -58,15 +58,15 @@ const ClientNavbar = ({ settings }: ClientNavbarPropes) => {
 
                     <Link
                         href="/client/my-files"
-                        className={`hover:text-blue-600 transition-all hover:scale-105 ${pathname === "/client/my-files" ? "text-blue-600" : ""
+                      className={`py-1 px-3 rounded-md hover:bg-blue-50 transition-colors ${pathname === "/client/my-files" ? "text-blue-500" : ""
                             }`}
                     >
                         My Files
                     </Link>
                     <Link
                         href="/client/my-schedules"
-                        className={`hover:text-blue-600 transition-all hover:scale-105 ${pathname === "/client/my-schedules" ? "text-blue-600" : ""
-                            }`}
+                         className={`py-1 px-3 rounded-md hover:bg-blue-50 transition-colors ${pathname === "/client/my-schedules" ? "text-blue-500" : ""
+                         }`}
                     >
                         My Schedules
                     </Link>

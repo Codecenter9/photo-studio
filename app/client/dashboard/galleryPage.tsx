@@ -3,14 +3,17 @@
 import EmptyState from "@/components/ui/emptyState";
 import { handleError } from "@/lib/error";
 import { IFile } from "@/types/models/File";
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from "@mui/material";
+import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Snackbar, Typography } from "@mui/material";
 import axios from "axios";
 import 'next-cloudinary/dist/cld-video-player.css';
-import { CheckCheck, Copy, Fullscreen, RefreshCcw, Settings } from "lucide-react";
+import { Download, Fullscreen, RefreshCcw, Settings, Share2 } from "lucide-react";
 import { CldImage, CldVideoPlayer } from "next-cloudinary";
 import { useCallback, useEffect, useState } from "react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import QRCode from "react-qr-code";
+import SocialShare from "./socialShare";
+import * as htmlToImage from "html-to-image";
+
 export default function GalleryPage() {
 
     const [files, setFiles] = useState<IFile[]>([]);
@@ -18,27 +21,22 @@ export default function GalleryPage() {
     const [loading, setLoading] = useState(true);
 
     const currentUser = useCurrentUser();
+    const userName = currentUser?.loggedInUser?.name;
     const userId = currentUser?.loggedInUser?.id;
 
     const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
     const [fileTypeActiveTab, setFileTypeActiveTab] = useState("Image");
     const [submitting, setSubmitting] = useState(false);
 
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
     const [openModal, setOpenModal] = useState(false);
+    const [openShareModal, setOpenShareModal] = useState(false);
     const [generatingQrCode, setGeneratingQrCode] = useState(false);
     const [qrGenerateError, setQrGenerateError] = useState<string>("");
 
     const [url, setUrl] = useState("");
-
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = async () => {
-        await navigator.clipboard.writeText(url);
-        setCopied(true);
-
-        setTimeout(() => setCopied(false), 2000);
-    };
-
 
     const toggleSelect = (id: string) => {
         setSelectedPhotos((prev) =>
@@ -55,7 +53,7 @@ export default function GalleryPage() {
 
     const generateQRCode = async () => {
         setQrGenerateError("");
-        setGeneratingQrCode(false);
+        setGeneratingQrCode(true);
         try {
             const response = await axios.post("/api/generate-qr");
 
@@ -65,19 +63,6 @@ export default function GalleryPage() {
         } finally {
             setGeneratingQrCode(false);
         }
-    };
-
-    const shareQR = async () => {
-        if (!navigator.share) {
-            alert("Sharing not supported on this device");
-            return;
-        }
-
-        await navigator.share({
-            title: "Client Gallery",
-            text: "Scan this QR to view photos",
-            url: url,
-        });
     };
 
     const fetchFiles = useCallback(async () => {
@@ -120,6 +105,27 @@ export default function GalleryPage() {
         }
     };
 
+    const handleQrDownload = async () => {
+        if (!url) {
+            alert("Please generate QR code first");
+            return;
+        }
+
+        const node = document.getElementById("qr-code-container");
+        if (!node) return;
+
+        try {
+            const dataUrl = await htmlToImage.toPng(node);
+
+            const link = document.createElement("a");
+            link.download = "gallery-qr-code.png";
+            link.href = dataUrl;
+            link.click();
+        } catch (error) {
+            console.error("QR download failed:", error);
+        }
+    };
+
     const openFullscreen = (photo: IFile) => {
         const container = document.getElementById(`media-${photo.publicId}`);
         if (!container) return;
@@ -153,6 +159,8 @@ export default function GalleryPage() {
                 data: { isPublic: updatedData[0]?.isPublic },
             });
 
+            setSnackbarMessage("Files became private successfully");
+            setSnackbarOpen(true);
             fetchFiles();
             setSelectedPhotos([]);
         } catch (error) {
@@ -370,17 +378,22 @@ export default function GalleryPage() {
                 </div>
             )}
 
+
             <div className="flex items-center justify-center">
                 <Dialog maxWidth="sm" open={openModal} onClose={() => setOpenModal(false)} >
                     <DialogTitle>
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center justify-between gap-5">
                             <span className="text-normal font-serif">Generate QR Code for public viewers</span>
-                            <button
-                                onClick={shareQR}
-                                className="hidden lg:flex bg-purple-600 text-sm cursor-pointer text-white px-3 py-1 rounded"
-                            >
-                                Share QR
-                            </button>
+                            <div className="flex items-center gap-0">
+                                <IconButton onClick={handleQrDownload} size="medium"><Download size={18} /></IconButton>
+                                <IconButton onClick={() => {
+                                    if (!url) {
+                                        return alert("Please first generate QR code!.")
+                                    }
+                                    setOpenShareModal(true)
+                                    setOpenModal(false)
+                                }} size="medium"><Share2 size={18} /></IconButton>
+                            </div>
                         </div>
                     </DialogTitle>
                     <hr className='h-1 text-gray-300' />
@@ -391,22 +404,12 @@ export default function GalleryPage() {
                             </p>
                         )}
                         {url && (
-                            <div className="flex flex-col gap-3 items-center w-full justify-between p-6">
-                                <div className="flex items-center w-full justify-center">
+                            <div
+                                className="flex items-center w-full justify-center bg-white p-4"
+                            >
+                                <span id="qr-code-container">
                                     <QRCode value={url} size={200} />
-                                </div>
-                                <div className="hidden lg:flex items-center gap-2 mt-2">
-                                    <p className="text-sm break-all">{url}</p>
-
-                                    <button
-                                        onClick={handleCopy}
-                                        className="p-1 hover:bg-gray-200 rounded cursor-pointer"
-                                        title="Copy URL"
-                                    >
-                                        {copied ? <CheckCheck size={16} /> : <Copy size={16} />}
-                                    </button>
-
-                                </div>
+                                </span>
                             </div>
                         )}
                     </DialogContent>
@@ -419,6 +422,43 @@ export default function GalleryPage() {
                     </DialogActions>
                 </Dialog>
             </div>
+            <div className="flex items-center justify-center">
+                <Dialog maxWidth="sm" open={openShareModal} onClose={() => {
+                    setOpenShareModal(false)
+                    setOpenModal(true)
+                }} >
+                    <DialogTitle>
+                        <div className="flex items-center justify-between gap-5">
+                            <span className="text-normal font-serif">Share QR code url to socials</span>
+                        </div>
+                    </DialogTitle>
+                    <hr className='h-1 text-gray-300' />
+                    <DialogContent>
+                        <SocialShare url={url} userName={userName} />
+                    </DialogContent>
+                    <hr className='h-1 text-gray-300' />
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setOpenShareModal(false)
+                            setOpenModal(true)
+                        }}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity="success"
+                    sx={{ width: "100%" }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

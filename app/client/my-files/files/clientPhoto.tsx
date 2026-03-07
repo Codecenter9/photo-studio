@@ -1,6 +1,6 @@
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { IFolder } from '@/types/models/folder';
-import { Button, Checkbox, Typography } from '@mui/material';
+import { Alert, Button, Checkbox, Snackbar, Typography } from '@mui/material';
 import { ArrowLeft, Download, Filter, Share2 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ClientPhotoDisplay from './clientPhotoDisplay';
@@ -37,6 +37,9 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
 
     const folderStatus = selectedFolder?.status;
 
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -55,7 +58,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
         { label: "Images", key: "Image" },
         { label: "Videos", key: "Video" },
     ]
-
+    
     const EditedTabs = useMemo(() => {
         if (!photos.length) return [];
 
@@ -153,6 +156,8 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
             });
 
             fetchPhotos();
+            setSnackbarMessage("Files became public successfully");
+            setSnackbarOpen(true);
             setSelectedPhotos([]);
         } catch (error) {
             console.error("Bulk update failed", error);
@@ -182,6 +187,8 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                 data: { selectionStatus: updatedData[0]?.selectionStatus },
             });
 
+            setSnackbarMessage("Selected files submitted successfully");
+            setSnackbarOpen(true);
             fetchPhotos();
             setSelectedPhotos([]);
         } catch (error) {
@@ -553,6 +560,21 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                     ))}
                 </div>
             </div>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity="success"
+                    sx={{ width: "100%" }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
 
             <ClientPhotoDisplay
                 photos={visiblePhotos}

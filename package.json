@@ -24,6 +24,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
     "ethiopian-date": "^0.0.6",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.564.0",
     "mongoose": "^9.2.1",
     "next": "16.1.6",
@@ -35,6 +36,7 @@
     "react-calendar": "^6.0.0",
     "react-dom": "19.2.3",
     "react-qr-code": "^2.0.18",
+    "react-share": "^5.2.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.1"
   },

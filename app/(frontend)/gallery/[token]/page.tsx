@@ -3,7 +3,7 @@
 import EmptyState from "@/components/ui/emptyState";
 import { handleError } from "@/lib/error";
 import { IFile } from "@/types/models/File";
-import { IconButton } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import axios from "axios";
 import 'next-cloudinary/dist/cld-video-player.css';
 import { Fullscreen, RefreshCcw } from "lucide-react";
@@ -20,6 +20,12 @@ export default function GalleryPage({
     const [files, setFiles] = useState<IFile[]>([]);
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState(true);
+    const [fileTypeActiveTab, setFileTypeActiveTab] = useState("Image");
+
+    const FileTypeTab = [
+        { label: "Images", key: "Image" },
+        { label: "Videos", key: "Video" },
+    ]
 
     const fetchFiles = useCallback(async () => {
         try {
@@ -53,74 +59,101 @@ export default function GalleryPage({
         }
     };
 
-    if (loading) return <p className="p-10">Loading images...</p>;
+    const filteredFiles = files.filter(photo => {
+        if (fileTypeActiveTab === "Image") {
+            return photo.resourceType === "image";
+        }
+        if (fileTypeActiveTab === "Video") {
+            return photo.resourceType === "video";
+        }
+        return true;
+    })
 
     return (
-        <div className='w-full p-12'>
-            {loading ? (
-                <p className="flex items-center justify-start gap-1">
-                    <RefreshCcw size={16} className="animate-spin" />
-                    Loading photos...
-                </p>
-            ) : error ? (
-
-                <p className="flex bg-yellow-100 text-red-600 px-3 py-1 rounded-md">
-                    {error}
-                </p>
-            ) : files.length === 0 ? (
-                <EmptyState title='No files found!' />
-
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
-                    {
-                        files.map((photo) => (
-                            <div
-                                key={photo.publicId}
-                                id={`media-${photo.publicId}`}
-                                className={`relative group rounded-sm overflow-hidden bg-white hover:shadow-sm transition-shadow `}
+        <main className="pt-12 min-h-screen flex-1 bg-gray-100 p-6 md:px-12 lg:px-16">
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col lg:flex-row justify-between gap-3">
+                    <div className="font-serif">
+                        <h1 className="text-2xl font-bold">Files</h1>
+                    </div >
+                    <div className="flex gap-2">
+                        {FileTypeTab.map((tab) => (
+                            <Button
+                                key={tab.key}
+                                onClick={() => setFileTypeActiveTab(tab.key)}
+                                variant={fileTypeActiveTab === tab.key ? "contained" : "outlined"}
+                                size="small"
                             >
-                                {photo?.resourceType?.startsWith("image") ? (
-                                    <CldImage
-                                        src={photo.publicId}
-                                        alt={photo.fileName}
-                                        width={360}
-                                        height={300}
-                                        sizes="100vw"
-                                        className="w-full h-40 object-cover"
-                                        crop="fill"
-                                        gravity="auto"
-                                    />
-                                ) : (
-                                    <CldVideoPlayer
-                                        src={photo.publicId}
-                                        width={360}
-                                        height={300}
-                                        controls
-                                        autoPlay={false}
-                                        muted={false}
-                                        className="w-full h-40 object-cover bg-gray-200 flex items-center justify-center"
-                                        colors={{
-                                            accent: "#ff0000",
-                                            base: "#00ff00",
-                                            text: "#0000ff",
-                                        }}
-                                        fontFace="Source Serif Pro"
-                                    />
-                                )}
+                                {tab.label}
+                            </Button>
+                        ))}
+                    </div>
+                </div >
+                {loading ? (
+                    <p className="flex items-center justify-start gap-1">
+                        <RefreshCcw size={16} className="animate-spin" />
+                        Loading photos...
+                    </p>
+                ) : error ? (
 
+                    <p className="flex bg-yellow-100 text-red-600 px-3 py-1 rounded-md">
+                        {error}
+                    </p>
+                ) : filteredFiles.length === 0 ? (
+                    <EmptyState title='No files found!' />
+
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+                        {
+                            filteredFiles.map((photo) => (
                                 <div
-                                    className="absolute bottom-0 left-0 w-full bg-white/90 px-2 py-1 flex items-center justify-between transition-all duration-300
-                    opacity-100 group-hover:opacity-100 group-hover:translate-y-0"
+                                    key={photo.publicId}
+                                    id={`media-${photo.publicId}`}
+                                    className={`relative group rounded-sm overflow-hidden bg-white hover:shadow-sm transition-shadow `}
                                 >
-                                    <IconButton size="small" title="Full Screen" onClick={() => openFullscreen(photo)}>
-                                        <Fullscreen size={16} />
-                                    </IconButton>
+                                    {photo?.resourceType?.startsWith("image") ? (
+                                        <CldImage
+                                            src={photo.publicId}
+                                            alt={photo.fileName}
+                                            width={360}
+                                            height={300}
+                                            sizes="100vw"
+                                            className="w-full h-40 object-cover"
+                                            crop="fill"
+                                            gravity="auto"
+                                        />
+                                    ) : (
+                                        <CldVideoPlayer
+                                            src={photo.publicId}
+                                            width={360}
+                                            height={300}
+                                            controls
+                                            autoPlay={false}
+                                            muted={false}
+                                            className="w-full h-40 object-cover bg-gray-200 flex items-center justify-center"
+                                            colors={{
+                                                accent: "#ff0000",
+                                                base: "#00ff00",
+                                                text: "#0000ff",
+                                            }}
+                                            fontFace="Source Serif Pro"
+                                        />
+                                    )}
+
+                                    <div
+                                        className="absolute top-0 left-0 w-max bg-gray-900/30 text-white p-1 rounded-md flex items-center transition-all duration-300
+                    opacity-100 group-hover:opacity-100 group-hover:translate-y-0"
+                                    >
+                                        <IconButton size="small" title="Full Screen" onClick={() => openFullscreen(photo)}>
+                                            <Fullscreen size={16} className="text-white"/>
+                                        </IconButton>
+                                    </div>
                                 </div>
-                            </div>
-                        ))
-                    }
-                </div>
-            )}
-        </div>
+                            ))
+                        }
+                    </div>
+                )}
+            </div>
+        </main>
     );
 }
