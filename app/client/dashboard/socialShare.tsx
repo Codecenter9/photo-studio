@@ -26,30 +26,30 @@ const SocialShare = ({ url, userName }: SocialSharePropes) => {
     return (
         <div className="w-full flex flex-col items-center justify-center gap-4 flex-wrap">
             <div className="w-full flex items-center justify-between gap-2">
-                <TelegramShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <TelegramShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <TelegramIcon size={32} round />
                 </TelegramShareButton>
-                <FacebookShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <FacebookShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <FacebookIcon size={32} round />
                 </FacebookShareButton>
-                <LinkedinShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <LinkedinShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <LinkedinIcon size={32} round />
                 </LinkedinShareButton>
-                <TwitterShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <TwitterShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <TwitterIcon size={32} round />
                 </TwitterShareButton>
             </div>
             <div className="w-full flex items-center justify-between gap-2">
-                <WhatsappShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <WhatsappShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <WhatsappIcon size={32} round />
                 </WhatsappShareButton>
-                <EmailShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <EmailShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <EmailIcon size={32} round />
                 </EmailShareButton>
-                <ThreadsShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <ThreadsShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <ThreadsIcon size={32} round />
                 </ThreadsShareButton>
-                <ViberShareButton title={`Visit this site to access ${userName}`} url={url} >
+                <ViberShareButton title={`Visit this site to access ${userName} files.`} url={url} >
                     <ViberIcon size={32} round />
                 </ViberShareButton>
             </div>

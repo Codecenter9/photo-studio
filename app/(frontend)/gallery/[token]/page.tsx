@@ -141,11 +141,11 @@ export default function GalleryPage({
                                     )}
 
                                     <div
-                                        className="absolute top-0 left-0 w-max bg-gray-900/30 text-white p-1 rounded-md flex items-center transition-all duration-300
+                                        className="absolute top-0 left-0 w-max bg-gray-900/30 text-white p-0.5 rounded-md flex items-center transition-all duration-300
                     opacity-100 group-hover:opacity-100 group-hover:translate-y-0"
                                     >
                                         <IconButton size="small" title="Full Screen" onClick={() => openFullscreen(photo)}>
-                                            <Fullscreen size={16} className="text-white"/>
+                                            <Fullscreen size={16} className="text-white" />
                                         </IconButton>
                                     </div>
                                 </div>
