@@ -5,6 +5,7 @@ const FolderSchema = new Schema({
   clientId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdBy: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   status: { type: String,  enum: ["UnEdited", "Edited"],default: "UnEdited"},
+  isVisibleForClient: { type: Boolean, default: true},
   createdAt: { type: Date, default: Date.now },
 });
 

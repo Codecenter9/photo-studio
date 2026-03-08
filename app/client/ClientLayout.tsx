@@ -35,6 +35,7 @@ const ClientLayout = ({
         }
         fetchSettings();
     }, [])
+    
     return (
         <SessionProvider session={session}>
             <div className={`relative overflow-x-hidden flex min-h-screen scrollbar-thin ${roboto.className} font-sans`}>

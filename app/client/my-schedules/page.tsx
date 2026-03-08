@@ -1,13 +1,12 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Button,
     IconButton,
-    Typography,
-    Chip,
     CircularProgress,
     Alert,
     Divider,
+    Snackbar,
 } from '@mui/material';
 import { Trash, Plus } from 'lucide-react';
 import { useCalendar } from '@/context/CalendarContext';
@@ -17,6 +16,8 @@ import { ISchedule } from '@/types/models/Schedule';
 import { formatDate as formatCalendarDate } from '@/lib/calendar';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import MyDetails from './component/MyDetail';
+import { ISettings } from '@/types/models/settings';
+import DeleteModal from '@/components/ui/deleteModal';
 
 const MySchedules = () => {
 
@@ -25,19 +26,34 @@ const MySchedules = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [selectedScheduleId, setSelectedScheduleId] = useState("");
-    // const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    // const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
-    // const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    // const [snackbarOpen, setSnackbarOpen] = useState(false);
-    // const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
+    const [settings, setSettings] = useState<ISettings>();
 
     const { mode } = useCalendar();
     const currentUser = useCurrentUser();
     const user = currentUser?.loggedInUser;
     const clientId = user?.id || "";
 
-    const fetchSchedules = async () => {
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const response = await axios.get('/api/settings');
+
+                setSettings(response.data);
+            } catch (error) {
+                console.log("failed to fetch settings", error);
+            }
+        }
+        fetchSettings();
+    }, [])
+
+    const fetchSchedules = useCallback(async () => {
         try {
             setLoading(true);
             const response = await axios.get(
@@ -49,28 +65,36 @@ const MySchedules = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [clientId]);
 
     useEffect(() => {
         fetchSchedules();
-    }, []);
+    }, [fetchSchedules]);
 
-    // const handleDeleteSchedule = async (id: string) => {
-    //     setIsDeleting(true);
-    //     try {
-    //         await axios.delete(`/api/schedule/${id}`);
+    const handleDeleteSchedule = async (id: string) => {
+        const selectedSchedule = schedules.find((schedule) => schedule._id === id);
+        if (!selectedSchedule) return;
 
-    //         setDeleteModalOpen(false);
-    //         setScheduleToDelete(null);
-    //         setSnackbarMessage("Schedule deleted successfully");
-    //         setSnackbarOpen(true);
-    //     } catch (err) {
-    //         console.error("Delete failed", err);
-    //         setSnackbarMessage("Failed to delete schedule");
-    //     } finally {
-    //         setIsDeleting(false);
-    //     }
-    // }
+        setIsDeleting(true);
+
+        try {
+            await axios.put(`/api/schedule/${id}`, {
+                isVisibleForClient: false
+            });
+
+            setDeleteModalOpen(false);
+            fetchSchedules();
+            setScheduleToDelete(null);
+            setSnackbarMessage("Schedule removed successfully");
+            setSnackbarOpen(true);
+
+        } catch (err) {
+            console.error("Update failed", err);
+            setSnackbarMessage("Failed to update schedule");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const upcommingSchedules = schedules?.filter(
         (schedule) => schedule.status && !["completed", "delivered"].includes(schedule.status)
@@ -102,7 +126,6 @@ const MySchedules = () => {
                         </div >
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
                             <div className="col-span-2 flex flex-col gap-3">
                                 <div className="flex flex-col gap-3 p-4 rounded border border-gray-300">
                                     <h2 className="text-base text-gray-700 font-semibold">Upcomming Schedules</h2>
@@ -123,7 +146,6 @@ const MySchedules = () => {
                                                         <th className="p-2 text-left">Type</th>
                                                         <th className="p-2 text-left">Date</th>
                                                         <th className="p-2 text-left">Status</th>
-                                                        <th className="p-2 text-center">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -145,18 +167,6 @@ const MySchedules = () => {
                                                                 >
                                                                     {item.status}
                                                                 </span>
-                                                            </td>
-                                                            <td className="p-2 text-center flex justify-center gap-2">
-                                                                <IconButton
-                                                                    // onClick={() => {
-                                                                    //     setScheduleToDelete(item._id);
-                                                                    //     setDeleteModalOpen(true);
-                                                                    // }}
-                                                                    size="small"
-                                                                    color="error"
-                                                                >
-                                                                    <Trash size={14} />
-                                                                </IconButton>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -209,7 +219,14 @@ const MySchedules = () => {
                                                                 </span>
                                                             </td>
                                                             <td className="p-2 text-center flex justify-center gap-2">
-                                                                <IconButton size="small" color="error">
+                                                                <IconButton
+                                                                    onClick={() => {
+                                                                        setScheduleToDelete(item._id);
+                                                                        setDeleteModalOpen(true);
+                                                                    }}
+                                                                    size="small"
+                                                                    color="error"
+                                                                >
                                                                     <Trash size={14} />
                                                                 </IconButton>
                                                             </td>
@@ -222,40 +239,86 @@ const MySchedules = () => {
                                 </div>
                             </div>
 
-                            <div className="w-full lg:w-80 flex flex-col items-center border border-gray-300 bg-white rounded-md p-6">
-                                <div className="flex flex-col items-center gap-2">
-                                    <span className="text-center p-6 rounded-full bg-gray-300 border text-2xl font-bold uppercase">
-                                        JD
+                            <div className="w-full lg:w-80 flex flex-col items-center border border-gray-300 rounded-md p-6">
+                                <div className="w-full flex flex-col items-center gap-2">
+                                    <span className="text-center font-serif p-6 rounded-full bg-gray-300 border text-2xl font-bold uppercase">
+                                        {settings?.studioName.substring(0, 2)}
                                     </span>
-                                    <Typography variant="h6" className="mt-2">
-                                        John Doe
-                                    </Typography>
-                                    <Chip label="CameraMan" size="small" className="mt-1" />
+                                    <div className="w-full flex flex-col gap-1 items-center mt-2">
+                                        <span className="w-full flex justify-between gap-2 text-sm bg-gray-900/5 border border-gray-300 px-3 py-1 rounded-md font-serif">
+                                            <p>Name:</p>
+                                            {settings?.studioName}
+                                        </span>
+                                        <span className="w-full flex justify-between gap-2 text-sm bg-gray-900/5 border border-gray-300 px-3 py-1 rounded-md font-serif">
+                                            <p>Phone:</p>
+                                            {settings?.studioPhone}
+                                        </span>
+                                        <span className="w-full flex justify-between gap-2 text-sm bg-gray-900/5 border border-gray-300 px-3 py-1 rounded-md font-serif">
+                                            <p>Email:</p>
+                                            {settings?.studioEmail}
+                                        </span>
+                                        <span className="w-full flex justify-between gap-2 text-sm bg-gray-900/5 border border-gray-300 px-3 py-1 rounded-md font-serif">
+                                            <p>Address:</p>
+                                            {settings?.studioAddress}
+                                        </span>
+                                    </div>
                                 </div>
                                 <Divider sx={{ width: '100%', my: 2 }} />
                                 <div className="text-sm text-gray-600 w-full mb-4">
                                     <p className="flex justify-between">
-                                        <span>Total Schedules:</span>
-                                        <span className="font-semibold">{schedules?.length}</span>
+                                        <span>Upcomming Schedules:</span>
+                                        <span className="font-semibold">{upcommingSchedules?.length}</span>
                                     </p>
                                     <p className="flex justify-between mt-1">
-                                        <span>Upcoming:</span>
+                                        <span>Completed Schedules:</span>
                                         <span className="font-semibold">
-                                            {schedules?.length}
+                                            {completedSchedules?.length}
                                         </span>
                                     </p>
                                 </div>
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    startIcon={<Plus size={16} />}
-                                    className="w-full"
-                                >
-                                    Add Schedule
-                                </Button>
+                                {settings?.allowClientBooking && (
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<Plus size={16} />}
+                                        className="w-full"
+                                    >
+                                        Add Schedule
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
+                        <Snackbar
+                            open={snackbarOpen}
+                            autoHideDuration={4000}
+                            onClose={() => setSnackbarOpen(false)}
+                            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                        >
+                            <Alert
+                                onClose={() => setSnackbarOpen(false)}
+                                severity="success"
+                                sx={{ width: "100%" }}
+                            >
+                                {snackbarMessage}
+                            </Alert>
+                        </Snackbar>
+
+                        <DeleteModal
+                            isOpen={deleteModalOpen}
+                            title="Delete Schedule"
+                            description="Are you sure you want to delete this schedule? This action cannot be undone."
+                            onClose={() => {
+                                setDeleteModalOpen(false);
+                                setScheduleToDelete(null);
+                            }}
+                            onConfirm={() => {
+                                if (scheduleToDelete) {
+                                    handleDeleteSchedule(scheduleToDelete);
+                                }
+                            }}
+                            confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
+                        />
                     </div>)}
         </>
     );

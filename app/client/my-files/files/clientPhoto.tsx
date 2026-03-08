@@ -1,7 +1,7 @@
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { IFolder } from '@/types/models/folder';
 import { Alert, Button, Checkbox, Snackbar, Typography } from '@mui/material';
-import { ArrowLeft, Download, Filter, Share2 } from 'lucide-react';
+import { ArrowLeft, Download, Filter, Share2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ClientPhotoDisplay from './clientPhotoDisplay';
 import 'next-cloudinary/dist/cld-video-player.css';
@@ -12,6 +12,7 @@ import { useCalendar } from '@/context/CalendarContext';
 import { formatDate } from "@/lib/calendar";
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import DeleteModal from '@/components/ui/deleteModal';
 interface PhotoSectionProps {
     selectedFolder?: IFolder | null;
     setSelectedFolderId?: React.Dispatch<React.SetStateAction<string | null>>;
@@ -37,6 +38,10 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
 
     const folderStatus = selectedFolder?.status;
 
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -58,7 +63,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
         { label: "Images", key: "Image" },
         { label: "Videos", key: "Video" },
     ]
-    
+
     const EditedTabs = useMemo(() => {
         if (!photos.length) return [];
 
@@ -87,6 +92,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
             setActiveTab(EditedTabs[0].key);
         }
     }, [EditedTabs, folderStatus]);
+
     const fetchPhotos = useCallback(async () => {
         if (!selectedFolderId || !selectedClientId) return;
 
@@ -198,6 +204,38 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
         }
     };
 
+    const handleDeleteFile = async () => {
+        if (selectedPhotos.length === 0) return;
+        setIsDeleting(true)
+        try {
+            const updatedData = selectedPhotos.map(photoId => {
+                const photo = photos.find(p => p.publicId === photoId);
+                if (!photo) return null;
+                return {
+                    publicId: photoId,
+                    isVisibleForClient: false,
+                };
+            }).filter(Boolean);
+
+            const photoIds = updatedData.map(u => u!.publicId);
+
+            await axios.patch("/api/photo/actions", {
+                action: "update",
+                photoIds,
+                data: { isVisibleForClient: updatedData[0]?.isVisibleForClient },
+            });
+
+            setSnackbarMessage("Selected files removed successfully");
+            setSnackbarOpen(true);
+            fetchPhotos();
+            setSelectedPhotos([]);
+        } catch (error) {
+            console.error("Bulk update failed", error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const handleDownloadSelected = async () => {
         if (selectedPhotos.length === 0) return;
 
@@ -245,36 +283,29 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
     }
 
     const filteredPhotos = useMemo(() => {
-        let result = photos;
+        return photos.filter(photo => {
 
-        if (folderStatus === "UnEdited") {
-            result = result.filter(photo => photo.selectionStatus === activeTab);
-        } else {
-            result = result.filter(photo => {
+            if (!photo.isVisibleForClient) return false;
+
+            if (folderStatus === "UnEdited") {
+                if (photo.selectionStatus !== activeTab) return false;
+            } else {
                 const isoDate = new Date(photo.createdAt)
                     .toISOString()
                     .split("T")[0];
 
-                return isoDate === activeTab;
-            });
-        }
+                if (isoDate !== activeTab) return false;
+            }
 
-        result = result.filter(photo => {
-            if (fileTypeActiveTab === "Image") {
-                return photo.resourceType === "image";
-            }
-            if (fileTypeActiveTab === "Video") {
-                return photo.resourceType === "video";
-            }
+            if (fileTypeActiveTab === "Image" && photo.resourceType !== "image") return false;
+            if (fileTypeActiveTab === "Video" && photo.resourceType !== "video") return false;
+
             return true;
+
         });
-
-        return result;
-
     }, [photos, activeTab, folderStatus, fileTypeActiveTab]);
 
     const visiblePhotos = filteredPhotos;
-
 
     return (
         <div className="w-full flex flex-col items-center gap-5 overflow-hidden">
@@ -294,8 +325,8 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-1 justify-start">
-                        <div className="flex gap-1 lg:gap-2 items-center">
+                    <div className="flex items-center gap-2 justify-start">
+                        <div className="flex gap-2 lg:gap-2 items-center">
                             <Typography className="flex items-center text-sm font-light gap-2 capitalize">
                                 <p className="hidden lg:flex nr-1">Selected</p>
                                 <span className="px-2 py-0.5 rounded-full items-center bg-amber-100 hover:bg-amber-200">
@@ -307,42 +338,12 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                 className="cursor-pointer">
                                 {visiblePhotos.length > 0 &&
                                     visiblePhotos.every(p => selectedPhotos.includes(p.publicId)) ? (
-                                    <span onClick={handleSelectAllToggle} className="hidden min-w-max lg:flex items-center gap-1 bg-red-100 px-2 py-0  rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
+                                    <span onClick={handleSelectAllToggle} className="hidden min-w-max lg:flex items-center gap-1 bg-red-100 px-2 py-0.5  rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
                                         <p>Unselect All</p>
-                                        <span className="">
-                                            <Checkbox
-                                                size="small"
-                                                checked={
-                                                    visiblePhotos.length > 0 &&
-                                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                                                }
-
-                                                indeterminate={
-                                                    visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
-                                                    !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                                                }
-                                                onChange={handleSelectAllToggle}
-                                            />
-                                        </span>
                                     </span>
                                 ) : (
-                                    <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center gap-1 bg-gray-200 px-2 py-0 rounded-md hover:bg-gray-300 hover:text-gray-950  transition-all duration-300">
+                                    <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center bg-gray-200 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-gray-950  transition-all duration-300">
                                         <p>Select All</p>
-                                        <span className="">
-                                            <Checkbox
-                                                size="small"
-                                                checked={
-                                                    visiblePhotos.length > 0 &&
-                                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                                                }
-
-                                                indeterminate={
-                                                    visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
-                                                    !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
-                                                }
-                                                onChange={handleSelectAllToggle}
-                                            />
-                                        </span>
                                     </span>
                                 )}
                                 <span className="flex lg:hidden rounded-full bg-gray-200">
@@ -361,10 +362,11 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                     />
                                 </span>
                             </div>
+
                         </div>
 
                         {folderStatus === "Edited" && (
-                            <div className="flex gap-1 items-center">
+                            <div className="flex gap-2 items-center">
                                 <div
                                     onClick={() => {
                                         if (selectedPhotos.length === 0) {
@@ -374,7 +376,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         handleShareSelected();
                                     }}
                                     title="Share"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-1.5 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                 >
                                     <span className="hidden lg:flex">
                                         Share
@@ -392,7 +394,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         handleDownloadSelected();
                                     }}
                                     title="Download"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-1.5 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                 >
                                     <span className="hidden lg:flex ">
                                         Download
@@ -406,10 +408,28 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         alert("Please select at least 1 file");
                                         return;
                                     }
+                                    setDeleteModalOpen(true);
+                                }}
+                                    title="Delete"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-red-100 hover:text-blue-500  transition-all duration-300"
+                                >
+
+                                    <span className="hidden lg:flex">
+                                        Delete
+                                    </span>
+                                    <span className="">
+                                        <Trash2 size={18} />
+                                    </span>
+                                </div>
+                                <div onClick={() => {
+                                    if (selectedPhotos.length === 0) {
+                                        alert("Please select at least 1 file");
+                                        return;
+                                    }
                                     handleMakePublic();
                                 }}
                                     title="Make Visibiity Public"
-                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-1.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
                                 >
 
                                     <span className="">
@@ -420,7 +440,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                         )}
 
                         {folderStatus === "UnEdited" && (
-                            <div className="flex gap-1 items-center">
+                            <div className="flex gap-2 items-center">
                                 {selectedClient?.permissions?.canShare && (
                                     <div
                                         onClick={() => {
@@ -561,6 +581,14 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                 </div>
             </div>
 
+            <ClientPhotoDisplay
+                photos={visiblePhotos}
+                loading={loading}
+                error={error}
+                selectedPhotos={selectedPhotos}
+                setSelectedPhotos={setSelectedPhotos}
+            />
+
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={4000}
@@ -576,13 +604,22 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                 </Alert>
             </Snackbar>
 
-            <ClientPhotoDisplay
-                photos={visiblePhotos}
-                loading={loading}
-                error={error}
-                selectedPhotos={selectedPhotos}
-                setSelectedPhotos={setSelectedPhotos}
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                title="Delete Schedule"
+                description="Are you sure you want to delete this schedule? This action cannot be undone."
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setFileToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (fileToDelete) {
+                        handleDeleteFile();
+                    }
+                }}
+                confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
             />
+
         </div>
     )
 }

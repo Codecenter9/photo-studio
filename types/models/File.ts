@@ -16,7 +16,8 @@ export interface IFile {
 
   uploadedBy: string;
   isPublic:boolean;
-
+  isVisibleForClient:boolean;
+  
   status: "UnEdited" | "Edited" | "Rejected";
 
   selectionStatus: "Selected" | "UnSelected" | "Approved" | "Rejected";

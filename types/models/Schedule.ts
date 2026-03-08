@@ -13,6 +13,8 @@ export interface ISchedule {
 
   deliveryDate?: Date | null;
 
+  isVisibleForClient:boolean;
+
   status?: "booked" | "editing" | "completed" | "cancelled";
 
   photographerId?: Types.ObjectId | null;

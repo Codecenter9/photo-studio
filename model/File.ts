@@ -68,6 +68,11 @@ const fileSchema = new Schema(
      type: Boolean,
     default: true,
     },
+    
+  isVisibleForClient: {   
+  type: Boolean,
+  default: true,
+  },
 },
   {
     timestamps: true, 

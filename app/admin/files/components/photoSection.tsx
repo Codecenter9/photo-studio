@@ -268,7 +268,7 @@ const PhotoSection = ({
                                     Unselect All
                                 </span>
                             ) : (
-                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300">
+                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-gray-100 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-gray-950  transition-all duration-300">
                                     Select All
                                 </span>
                             )}
@@ -298,7 +298,7 @@ const PhotoSection = ({
                                 handleShareSelected();
                             }}
                             title="Share"
-                            className="flex items-center gap-2 cursor-pointer bg-cyan-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-200 hover:text-blue-500  transition-all duration-300"
                         >
                             <span className="hidden lg:flex">
                                 Share
@@ -334,7 +334,7 @@ const PhotoSection = ({
                             setDeleteModalOpen(true);
                         }}
                             title="Delete"
-                            className="flex items-center gap-2 cursor-pointer bg-red-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-red-100 hover:text-blue-500  transition-all duration-300"
                         >
 
                             <span className="hidden lg:flex">

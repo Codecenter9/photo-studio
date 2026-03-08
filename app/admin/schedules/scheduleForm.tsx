@@ -338,7 +338,7 @@ const ScheduleForm = ({
                     </div>
                 )}
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col lg:flex-row items-center gap-3">
                     <FormControl
                         fullWidth
                         size="small"

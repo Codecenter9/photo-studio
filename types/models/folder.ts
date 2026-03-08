@@ -6,6 +6,7 @@ export interface IFolder {
   clientId: string;
   createdBy:string;
   status: "UnEdited" | "Edited";
+  isVisibleForClient:boolean;
   createdAt?: string;
   updatedAt?: string;
 }

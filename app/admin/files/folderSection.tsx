@@ -151,7 +151,7 @@ const FolderSection = ({
                                         {folder.name}
                                     </p>
                                 )}
-
+                                
                                 <div
                                     onClick={(e) => {
                                         e.stopPropagation();

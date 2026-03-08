@@ -51,6 +51,11 @@ const scheduleSchema = new Schema(
       trim: true,
       default: null,
     },
+
+    isVisibleForClient: {   
+    type: Boolean,
+    default: true,
+    },
   },
   { timestamps: true }
 );

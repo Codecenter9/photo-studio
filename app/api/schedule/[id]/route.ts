@@ -17,7 +17,7 @@ export async function GET(req: Request,
       );
     }
 
-    const schedules = await Schedule.find({ clientId: id }).sort({ createdAt: -1 });;
+    const schedules = await Schedule.find({ clientId: id, isVisibleForClient: true }).sort({ createdAt: -1 });;
     return NextResponse.json(schedules);
   } catch (error) {
     console.error("Get schedules error:", error);

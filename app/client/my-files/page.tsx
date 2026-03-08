@@ -14,7 +14,6 @@ import ClientPhoto from "./files/clientPhoto";
 import EmptyState from "@/components/ui/emptyState";
 
 const MyFiles = () => {
-    const [selected, setSelected] = useState<number[]>([]);
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
         open: false,
         message: "",
@@ -32,7 +31,9 @@ const MyFiles = () => {
     ];
 
     const currentUser = useCurrentUser();
-    const selectedClientId = currentUser.loggedInUser?.id || null;
+    const selectedClientId = currentUser?.loggedInUser?.id;
+
+    const clientId = selectedClientId;
 
     const fetchFolders = async (clientId: string, status: string) => {
         try {
@@ -44,7 +45,11 @@ const MyFiles = () => {
                 },
             });
 
-            setFolders(response.data);
+            const filteredFolders = response.data.filter(
+                (folder) => folder.isVisibleForClient
+            );
+
+            setFolders(filteredFolders);
         } catch (err: unknown) {
             console.error("Error fetching folders:", err);
         } finally {
@@ -53,12 +58,12 @@ const MyFiles = () => {
     };
 
     useEffect(() => {
-        if (!selectedClientId) {
+        if (!clientId) {
             setFolders([]);
             return;
         }
-        fetchFolders(selectedClientId, activeTab);
-    }, [selectedClientId, activeTab]);
+        fetchFolders(clientId, activeTab);
+    }, [clientId, activeTab]);
 
     const selectedFolder = folders.find((folder) => folder._id === selectedFolderId)
 
@@ -99,15 +104,14 @@ const MyFiles = () => {
                                     </span>
                                 ) : folders.length > 0 ? (
                                     <ClientFolders
+                                        activeTab={activeTab}
+                                        fetchFolders={fetchFolders}
                                         folders={folders}
-                                        loadingFolder={loadingFolder}
-                                        selected={selected}
-                                        setSelected={setSelected}
-                                        selectedClientId={selectedClientId}
+                                        clientId={clientId}
                                         setSelectedFolderId={setSelectedFolderId}
                                     />
                                 ) : (
-                                    <EmptyState title="No folders found for this client." />
+                                    <EmptyState title="No folders found." />
                                 )}
                             </div>
                         )
