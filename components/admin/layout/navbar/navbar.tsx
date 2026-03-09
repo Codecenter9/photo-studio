@@ -73,13 +73,6 @@ const Navbar = ({ settings, collapsed, setIsOpen }: NavbarProps) => {
                     {dropdownOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white text-gray-950 rounded-md shadow-lg py-1 z-10">
                             <Link
-                                href="/admin/profile"
-                                className="block px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
-                                onClick={() => setDropdownOpen(false)}
-                            >
-                                Your Profile
-                            </Link>
-                            <Link
                                 href="/admin/settings"
                                 className="block px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
                                 onClick={() => setDropdownOpen(false)}

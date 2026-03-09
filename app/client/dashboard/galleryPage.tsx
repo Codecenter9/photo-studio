@@ -204,7 +204,7 @@ export default function GalleryPage() {
                                 {filteredFiles.length > 0 &&
                                     filteredFiles.every(p => selectedPhotos.includes(p.publicId)) ? (
                                     <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center max-w-max bg-red-100 px-2 py-0 rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
-                                        Unselect All
+                                        <p>Unselect All</p>
                                         <span className="">
                                             <Checkbox
                                                 size="small"
@@ -222,8 +222,8 @@ export default function GalleryPage() {
                                         </span>
                                     </span>
                                 ) : (
-                                    <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center bg-gray-200 px-2 py-0 rounded-md hover:bg-gray-300 hover:text-gray-950  transition-all duration-300">
-                                        Select All
+                                    <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center max-w-max bg-gray-200 px-2 py-0 rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
+                                        <p>Select All</p>
                                         <span className="">
                                             <Checkbox
                                                 size="small"
@@ -236,12 +236,12 @@ export default function GalleryPage() {
                                                     filteredFiles.some(p => selectedPhotos.includes(p.publicId)) &&
                                                     !filteredFiles.every(p => selectedPhotos.includes(p.publicId))
                                                 }
-                                                onChange={handleSelectAllToggle}
+
                                             />
                                         </span>
                                     </span>
                                 )}
-                                <span className="flex lg:hidden">
+                                <span className="flex lg:hidden rounded-full bg-gray-200">
                                     <Checkbox
                                         size="small"
                                         checked={

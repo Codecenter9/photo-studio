@@ -340,10 +340,40 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                     visiblePhotos.every(p => selectedPhotos.includes(p.publicId)) ? (
                                     <span onClick={handleSelectAllToggle} className="hidden min-w-max lg:flex items-center gap-1 bg-red-100 px-2 py-0.5  rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
                                         <p>Unselect All</p>
+                                        <span className="">
+                                            <Checkbox
+                                                size="small"
+                                                checked={
+                                                    visiblePhotos.length > 0 &&
+                                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+
+                                                indeterminate={
+                                                    visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                                    !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+
+                                            />
+                                        </span>
                                     </span>
                                 ) : (
                                     <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center bg-gray-200 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-gray-950  transition-all duration-300">
                                         <p>Select All</p>
+                                        <span className="">
+                                            <Checkbox
+                                                size="small"
+                                                checked={
+                                                    visiblePhotos.length > 0 &&
+                                                    visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+
+                                                indeterminate={
+                                                    visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                                    !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                                }
+
+                                            />
+                                        </span>
                                     </span>
                                 )}
                                 <span className="flex lg:hidden rounded-full bg-gray-200">
@@ -376,7 +406,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         handleShareSelected();
                                     }}
                                     title="Share"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                 >
                                     <span className="hidden lg:flex">
                                         Share
@@ -394,7 +424,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                         handleDownloadSelected();
                                     }}
                                     title="Download"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                 >
                                     <span className="hidden lg:flex ">
                                         Download
@@ -411,7 +441,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                     setDeleteModalOpen(true);
                                 }}
                                     title="Delete"
-                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-red-100 hover:text-blue-500  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 rounded-full lg:rounded-md hover:bg-red-100 hover:text-blue-500  transition-all duration-300"
                                 >
 
                                     <span className="hidden lg:flex">
@@ -429,7 +459,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                     handleMakePublic();
                                 }}
                                     title="Make Visibiity Public"
-                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 p-2 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
                                 >
 
                                     <span className="">
@@ -451,7 +481,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                             handleShareSelected();
                                         }}
                                         title="Share"
-                                        className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                        className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                     >
                                         <span className="hidden lg:flex">
                                             Share
@@ -472,7 +502,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                             handleDownloadSelected();
                                         }}
                                         title="Download"
-                                        className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
+                                        className="flex items-center gap-2 cursor-pointer bg-gray-200 p-2 rounded-full lg:rounded-md hover:bg-gray-300 hover:text-blue-500  transition-all duration-300"
                                     >
                                         <span className="hidden lg:flex ">
                                             Download
@@ -490,7 +520,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                     handleSelectedSubmit();
                                 }}
                                     title="Change Status"
-                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 px-2 py-0.5 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
+                                    className="flex items-center gap-2 cursor-pointer bg-cyan-100 p-2 rounded-md hover:bg-cyan-200 hover:text-gray-950  transition-all duration-300"
                                 >
 
                                     <span className="">

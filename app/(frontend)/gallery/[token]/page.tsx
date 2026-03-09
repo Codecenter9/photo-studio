@@ -122,7 +122,7 @@ export default function GalleryPage({
 
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
                         <div className="col-span-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
                                 {
                                     filteredFiles.map((photo) => (
                                         <div

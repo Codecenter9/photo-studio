@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Checkbox, Typography } from "@mui/material";
-import { ArrowLeft, Download, Filter, Share2, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Filter, Share2, Trash2, UploadCloud } from "lucide-react";
 import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
 import 'next-cloudinary/dist/cld-video-player.css';
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -253,9 +253,9 @@ const PhotoSection = ({
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-1 justify-start">
+                    <div className="flex items-center gap-2 justify-start">
                         <Typography className="text-sm font-light flex gap-2 capitalize">
-                            <span className="px-2 py-0.5 rounded-full items-center bg-amber-100 hover:bg-amber-200">
+                            <span className="px-2 py-1 rounded-full items-center bg-amber-100 hover:bg-amber-200">
                                 {selectedPhotos.length}
                             </span>
                         </Typography>
@@ -264,17 +264,45 @@ const PhotoSection = ({
                             className="cursor-pointer">
                             {visiblePhotos.length > 0 &&
                                 visiblePhotos.every(p => selectedPhotos.includes(p.publicId)) ? (
-                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-red-100 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
-                                    Unselect All
+                                <span onClick={handleSelectAllToggle} className="hidden min-w-max lg:flex items-center gap-1 bg-red-100 px-2  rounded-md hover:bg-red-200 hover:text-red-500  transition-all duration-300">
+                                    <p>Unselect All</p>
+                                    <span className="">
+                                        <Checkbox
+                                            size="small"
+                                            checked={
+                                                visiblePhotos.length > 0 &&
+                                                visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                            }
+
+                                            indeterminate={
+                                                visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                                !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                            }
+                                        />
+                                    </span>
                                 </span>
                             ) : (
-                                <span onClick={handleSelectAllToggle} className="hidden lg:flex bg-gray-100 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-gray-950  transition-all duration-300">
-                                    Select All
+                                <span onClick={handleSelectAllToggle} className="hidden lg:flex items-center bg-gray-100 px-2 py-0.5 rounded-md hover:bg-red-200 hover:text-gray-950  transition-all duration-300">
+                                    <p>Select All</p>
+                                    <span className="">
+                                        <Checkbox
+                                            size="small"
+                                            checked={
+                                                visiblePhotos.length > 0 &&
+                                                visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                            }
+
+                                            indeterminate={
+                                                visiblePhotos.some(p => selectedPhotos.includes(p.publicId)) &&
+                                                !visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
+                                            }
+                                        />
+                                    </span>
                                 </span>
                             )}
-                            <span className="flex lg:hidden">
+                            <span className="flex lg:hidden rounded-full bg-gray-100">
                                 <Checkbox
-                                    size="medium"
+                                    size="small"
                                     checked={
                                         visiblePhotos.length > 0 &&
                                         visiblePhotos.every(p => selectedPhotos.includes(p.publicId))
@@ -298,7 +326,7 @@ const PhotoSection = ({
                                 handleShareSelected();
                             }}
                             title="Share"
-                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-200 hover:text-blue-500  transition-all duration-300"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 rounded-full lg:rounded-md hover:bg-gray-200 hover:text-blue-500  transition-all duration-300"
                         >
                             <span className="hidden lg:flex">
                                 Share
@@ -317,7 +345,7 @@ const PhotoSection = ({
                                 handleDownloadSelected();
                             }}
                             title="Download"
-                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-gray-200 hover:text-blue-500  transition-all duration-300"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 rounded-full lg:rounded-md hover:bg-gray-200 hover:text-blue-500  transition-all duration-300"
                         >
                             <span className="hidden lg:flex ">
                                 Download
@@ -334,7 +362,7 @@ const PhotoSection = ({
                             setDeleteModalOpen(true);
                         }}
                             title="Delete"
-                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 lg:px-2 lg:py-0.5 rounded-full lg:rounded-md hover:bg-red-100 hover:text-blue-500  transition-all duration-300"
+                            className="flex items-center gap-2 cursor-pointer bg-gray-100 p-2 rounded-full lg:rounded-md hover:bg-red-100 hover:text-blue-500  transition-all duration-300"
                         >
 
                             <span className="hidden lg:flex">
@@ -387,7 +415,7 @@ const PhotoSection = ({
                         }}
                     >
                         {({ open }) => (
-                            <Button variant="outlined" onClick={() => open()} size="small">
+                            <Button startIcon={<UploadCloud size={18}/>} variant="outlined" onClick={() => open()} size="small">
                                 Upload
                             </Button>
                         )}

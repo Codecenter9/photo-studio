@@ -148,7 +148,7 @@ const ClientDetail = ({ schedules, fetchSchedules, selectedSchedule, setSelected
                     <ArrowLeft size={20} />
                 </span>
 
-                <div className="w-full flex justify-between">
+                <div className="w-full flex items-center justify-between">
                     <div className="flex flex-col font-serif">
                         <span className="text-base font-light text-gray-600">
                             Details:{" "}

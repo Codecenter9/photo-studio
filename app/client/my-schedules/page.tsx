@@ -7,8 +7,9 @@ import {
     Alert,
     Divider,
     Snackbar,
+    Switch,
 } from '@mui/material';
-import { Trash, Plus } from 'lucide-react';
+import { Trash, Plus, Settings } from 'lucide-react';
 import { useCalendar } from '@/context/CalendarContext';
 import { handleError } from '@/lib/error';
 import axios from 'axios';
@@ -18,8 +19,13 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import MyDetails from './component/MyDetail';
 import { ISettings } from '@/types/models/settings';
 import DeleteModal from '@/components/ui/deleteModal';
+import DialogBox from '@/components/ui/modal';
 
 const MySchedules = () => {
+
+    const { mode, setMode } = useCalendar();
+
+    const [openModal, setOpenModal] = useState(false);
 
     const [schedules, setSchedules] = useState<ISchedule[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -35,7 +41,6 @@ const MySchedules = () => {
 
     const [settings, setSettings] = useState<ISettings>();
 
-    const { mode } = useCalendar();
     const currentUser = useCurrentUser();
     const user = currentUser?.loggedInUser;
     const clientId = user?.id || "";
@@ -123,6 +128,12 @@ const MySchedules = () => {
                                     Manage and organize your photo schedules.
                                 </p>
                             </div >
+                            <Button onClick={() => setOpenModal(true)} variant='outlined' size='small'>
+                                <div className="flex items-center justify-center gap-2">
+                                    <Settings size={18} />
+                                    <span className='hidden lg:flex'>Settings</span>
+                                </div>
+                            </Button>
                         </div >
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -288,6 +299,31 @@ const MySchedules = () => {
                                 )}
                             </div>
                         </div>
+
+                        <DialogBox
+                            open={openModal}
+                            title="Update Calender"
+                            onClose={() => {
+                                setOpenModal(false);
+
+                            }}
+                            maxWidth="md"
+                        >
+                            <div className="flex items-center justify-between border border-pink-500 rounded-md px-4 py-1">
+                                <span className="text-sm font-medium">
+                                    {mode === "ethiopian"
+                                        ? "የኢትዮጵያ የቀን አቆጣጠር ይጠቀሙ"
+                                        : "Using Gregorian Calendar"}
+                                </span>
+
+                                <Switch
+                                    checked={mode === "ethiopian"}
+                                    onChange={(e) =>
+                                        setMode(e.target.checked ? "ethiopian" : "gregorian")
+                                    }
+                                />
+                            </div>
+                        </DialogBox>
 
                         <Snackbar
                             open={snackbarOpen}

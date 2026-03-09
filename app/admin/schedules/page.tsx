@@ -38,7 +38,7 @@ const SchedulesPage = () => {
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-    
+
     const { mode } = useCalendar();
     const [scheduleDate, setScheduleDate] = useState<Date>(new Date());
 
@@ -117,12 +117,34 @@ const SchedulesPage = () => {
         return matchesName && matchesDate;
     });
 
-    const upcommingSchedules = schedules.filter(
-        (schedule) => schedule.status && !["completed", "delivered"].includes(schedule.status)
+    const uniqueSchedulesByClient = (schedules: ISchedule[]) => {
+        const map = new Map<string, ISchedule>();
+
+        schedules.forEach((schedule) => {
+            const clientId = (schedule.clientId as IUser)?._id;
+
+            if (clientId && !map.has(clientId)) {
+                map.set(clientId, schedule);
+            }
+        });
+
+        return Array.from(map.values());
+    };
+
+    const upcommingSchedules = uniqueSchedulesByClient(
+        schedules.filter(
+            (schedule) =>
+                schedule.status &&
+                !["completed", "delivered"].includes(schedule.status)
+        )
     );
 
-    const completedSchedules = filteredSchedules.filter(
-        (schedule) => schedule.status && ["completed", "delivered"].includes(schedule.status)
+    const completedSchedules = uniqueSchedulesByClient(
+        filteredSchedules.filter(
+            (schedule) =>
+                schedule.status &&
+                ["completed", "delivered"].includes(schedule.status)
+        )
     );
 
     const formatDate = (date?: Date | null) => formatCalendarDate(date ?? null, mode);

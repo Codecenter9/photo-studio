@@ -6,6 +6,7 @@ import { Session } from "next-auth";
 import { ISettings } from '@/types/models/settings';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { CalendarProvider } from '@/context/CalendarContext';
 
 const roboto = Roboto({
     weight: '400',
@@ -37,6 +38,7 @@ const ClientLayout = ({
     }, [])
     
     return (
+        <CalendarProvider>
         <SessionProvider session={session}>
             <div className={`relative overflow-x-hidden flex min-h-screen scrollbar-thin ${roboto.className} font-sans`}>
                 <ClientNavbar settings={settings} />
@@ -45,6 +47,7 @@ const ClientLayout = ({
                 </main>
             </div>
         </SessionProvider>
+        </CalendarProvider>
     )
 }
 
