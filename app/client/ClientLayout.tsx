@@ -36,17 +36,17 @@ const ClientLayout = ({
         }
         fetchSettings();
     }, [])
-    
+
     return (
         <CalendarProvider>
-        <SessionProvider session={session}>
-            <div className={`relative overflow-x-hidden flex min-h-screen scrollbar-thin ${roboto.className} font-sans`}>
-                <ClientNavbar settings={settings} />
-                <main className="pt-24 flex-1 bg-gray-100 p-6 md:px-12 lg:px-16">
-                    {children}
-                </main>
-            </div>
-        </SessionProvider>
+            <SessionProvider session={session}>
+                <div className={`relative overflow-x-hidden flex min-h-screen scrollbar-thin ${roboto.className} font-sans`}>
+                    <ClientNavbar settings={settings} />
+                    <main className="pt-24 flex-1 bg-gray-100 p-6 md:px-12 lg:px-16">
+                        {children}
+                    </main>
+                </div>
+            </SessionProvider>
         </CalendarProvider>
     )
 }

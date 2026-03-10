@@ -2,21 +2,18 @@
 
 html,
 body {
-font-family: "Inter", sans-serif;
-  color: #1e293b;          
+  font-family: "Inter", sans-serif;
+  color: #1e293b;
   line-height: 1.5;
   overflow-x: hidden;
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
 }
 
-/* .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
   display: none;
-} */
-
+}
 .scrollbar-thin {
   scrollbar-width: thin; 
   scrollbar-color: rgba(100, 100, 100, 0.4) transparent; 
