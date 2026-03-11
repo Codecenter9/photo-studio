@@ -39,7 +39,7 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
         <MuiCarousel
             autoPlay
             swipe
-            interval={4000}
+            interval={5000}
             animation="fade"
             indicators
             onChange={(now) => {
@@ -67,7 +67,6 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
                         }}
                     >
 
-                        {/* overlay */}
                         <Box
                             sx={{
                                 position: "absolute",
@@ -82,7 +81,7 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
                                 position: "relative",
                                 zIndex: 2,
                                 maxWidth: 650,
-                                paddingLeft: { xs: 4, md: 12 },
+                                paddingX: { xs: 3, md: 12 },
                                 color: "white"
                             }}
                             initial="hidden"
@@ -95,7 +94,6 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
                             }}
                         >
 
-                            {/* subtitle */}
                             {subtitle && (
                                 <MotionTypography
                                     variants={fadeUp}
@@ -106,14 +104,13 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
                                         textTransform: "uppercase",
                                         fontSize: "0.8rem",
                                         borderLeft: "3px solid white",
-                                        paddingLeft: 1.5
+                                        paddingLeft: 1.5,
                                     }}
                                 >
                                     {subtitle}
                                 </MotionTypography>
                             )}
 
-                            {/* title */}
                             {item.title && (
                                 <MotionTypography
                                     variant="h3"
@@ -122,14 +119,14 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
                                     transition={{ duration: 0.6 }}
                                     sx={{
                                         fontFamily: `"Playfair Display", serif`,
-                                        lineHeight: 1.2
+                                        lineHeight: 1.2,
+                                        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }, // responsive
                                     }}
                                 >
                                     {item.title}
                                 </MotionTypography>
                             )}
 
-                            {/* description */}
                             {item.description && (
                                 <MotionTypography
                                     variants={fadeUp}
@@ -144,7 +141,6 @@ const Carousel: React.FC<CarouselProps> = ({ items, subtitle, height = 600 }) =>
                                 </MotionTypography>
                             )}
 
-                            {/* buttons */}
                             {item.buttons && (
                                 <MotionStack
                                     direction="row"

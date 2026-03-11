@@ -3,12 +3,13 @@
 import { Button, IconButton, Drawer, List, ListItem, ListItemText } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronRight, Menu } from "lucide-react";
 
 const FrontNavbar = () => {
     const path = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
 
     const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
 
@@ -19,10 +20,29 @@ const FrontNavbar = () => {
         { label: "Contact", href: "/contact" },
     ];
 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
     return (
-        <nav className="w-full flex items-center justify-between">
+        <nav
+            className={`w-full fixed top-0 left-0 z-50 flex items-center justify-between transition-colors duration-500 px-6 md:px-12 py-4
+                ${scrolled ? "bg-gray-950/95 text-white" : "text-gray-300"}
+            `}
+        >
             <div className="flex items-center justify-center">
-                <span className="text-3xl font-serif font-bold tracking-wide text-gray-300">Studio</span>
+                <span className={`text-3xl font-serif font-bold tracking-wide transition-colors duration-500 ${scrolled ? "text-white" : "text-gray-300"}`}>
+                    Studio
+                </span>
             </div>
 
             <div className="hidden md:flex items-center gap-6">
@@ -30,15 +50,16 @@ const FrontNavbar = () => {
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={`text-gray-300 font-serif capitalize hover:text-blue-500 transition-colors ${path === item.href ? "text-blue-500 font-semibold" : ""
-                            }`}
+                        className={`text-lg font-serif capitalize transition-colors duration-500
+                            ${path === item.href ? "text-blue-300 font-semibold" : scrolled ? "text-white hover:text-blue-200" : "text-gray-300 hover:text-blue-500"}
+                        `}
                     >
                         {item.label}
                     </Link>
                 ))}
 
                 <Link href="/auth/login">
-                    <Button size="small" variant="outlined" color="primary">
+                    <Button size="small" variant={scrolled ? "contained" : "outlined"} color="primary">
                         Login
                     </Button>
                 </Link>
@@ -46,7 +67,7 @@ const FrontNavbar = () => {
 
             <div className="md:hidden">
                 <IconButton onClick={toggleMobileMenu} color="inherit">
-                    <Menu size={24} className="text-gray-300" />
+                    <Menu size={24} className="transition-colors duration-500" />
                 </IconButton>
             </div>
 
@@ -65,8 +86,7 @@ const FrontNavbar = () => {
                         <ListItem
                             key={item.href}
                             onClick={toggleMobileMenu}
-                            className={`${path === item.href ? "text-blue-500 font-semibold" : "text-gray-800"
-                                }`}
+                            className={`${path === item.href ? "text-blue-500 font-semibold" : "text-gray-800"}`}
                         >
                             <Link href={item.href} className="w-full flex group items-center justify-between gap-3">
                                 <ListItemText primary={item.label} />

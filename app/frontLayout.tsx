@@ -1,5 +1,6 @@
 "use client"
 
+import FrontFooter from "@/components/frontend/layout/footer";
 import FrontNavbar from "@/components/frontend/layout/navbar";
 import { usePathname } from "next/navigation";
 
@@ -14,11 +15,10 @@ export default function FrontLayout({
     return (
         <html lang="en">
             <body>
-                <div className="min-h-screen relative flex flex-col bg-gray-50">
+                <div className="min-h-screen relative flex flex-col bg-gray-100">
 
                     {!isAuthPage && (
-                        <div className="fixed top-0 z-10 w-full h-18 px-6 lg:px-16 flex items-center
-                                        bg-gray-900/10 backdrop-blur-md">
+                        <div className="">
                             <FrontNavbar />
                         </div>
                     )}
@@ -26,7 +26,11 @@ export default function FrontLayout({
                     <main>
                         {children}
                     </main>
-
+                    {!isAuthPage && (
+                        <div className="">
+                            <FrontFooter />
+                        </div>
+                    )}
                 </div>
             </body>
         </html>
