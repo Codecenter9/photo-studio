@@ -8,13 +8,20 @@ import axios from "axios";
 import 'next-cloudinary/dist/cld-video-player.css';
 import { Download, Fullscreen, RefreshCcw, Settings, Share2 } from "lucide-react";
 import { CldImage, CldVideoPlayer } from "next-cloudinary";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import QRCode from "react-qr-code";
 import SocialShare from "./socialShare";
 import * as htmlToImage from "html-to-image";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import FullscreenPlugin from "yet-another-react-lightbox/plugins/fullscreen";
+import Video from "yet-another-react-lightbox/plugins/video";
 
 export default function GalleryPage() {
+    const [lightboxIndex, setLightboxIndex] = useState(-1);
 
     const [files, setFiles] = useState<IFile[]>([]);
     const [error, setError] = useState<string>("");
@@ -126,18 +133,6 @@ export default function GalleryPage() {
         }
     };
 
-    const openFullscreen = (photo: IFile) => {
-        const container = document.getElementById(`media-${photo.publicId}`);
-        if (!container) return;
-
-        const mediaElement = container.querySelector('img, video');
-        const element = mediaElement || container;
-
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        }
-    };
-
     const handleMakePublic = async () => {
         if (selectedPhotos.length === 0) return;
         setSubmitting(true);
@@ -180,6 +175,28 @@ export default function GalleryPage() {
         }
         return true;
     });
+
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+    const slides = useMemo(() => {
+        return filteredFiles.map((file) => {
+            if (file.resourceType === "video") {
+                return {
+                    type: "video" as const,
+                    sources: [
+                        {
+                            src: `https://res.cloudinary.com/${cloudName}/video/upload/${file.publicId}.mp4`,
+                            type: "video/mp4",
+                        },
+                    ],
+                };
+            }
+
+            return {
+                src: `https://res.cloudinary.com/${cloudName}/image/upload/${file.publicId}`,
+            };
+        });
+    }, [filteredFiles, cloudName]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -317,9 +334,9 @@ export default function GalleryPage() {
                 <EmptyState title='No files found!' />
 
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
                     {
-                        filteredFiles?.map((photo) => (
+                        filteredFiles?.map((photo, index) => (
                             <div
                                 key={photo.publicId}
                                 id={`media-${photo.publicId}`}
@@ -332,26 +349,29 @@ export default function GalleryPage() {
                                         width={360}
                                         height={300}
                                         sizes="100vw"
-                                        className="w-full h-40 object-cover"
+                                        className="w-full h-40 object-cover cursor-pointer"
                                         crop="fill"
                                         gravity="auto"
+                                        onClick={() => setLightboxIndex(index)}
                                     />
                                 ) : (
-                                    <CldVideoPlayer
-                                        src={photo.publicId}
-                                        width={360}
-                                        height={300}
-                                        controls
-                                        autoPlay={false}
-                                        muted={false}
-                                        className="w-full h-40 object-cover bg-gray-200 flex items-center justify-center"
-                                        colors={{
-                                            accent: "#ff0000",
-                                            base: "#00ff00",
-                                            text: "#0000ff",
-                                        }}
-                                        fontFace="Source Serif Pro"
-                                    />
+                                    // <div onClick={() => setLightboxIndex(index)}>
+                                        <CldVideoPlayer
+                                            src={photo.publicId}
+                                            width={360}
+                                            height={300}
+                                            controls
+                                            autoPlay={false}
+                                            muted={false}
+                                            className="w-full h-40 object-cover bg-gray-200 flex items-center justify-center cursor-pointer"
+                                            colors={{
+                                                accent: "#ff0000",
+                                                base: "#00ff00",
+                                                text: "#0000ff",
+                                            }}
+                                            fontFace="Source Serif Pro"
+                                        />
+                                    // </div>
                                 )}
 
                                 <div
@@ -368,7 +388,7 @@ export default function GalleryPage() {
                                         Select
                                     </label>
 
-                                    <IconButton size="small" title="Full Screen" onClick={() => openFullscreen(photo)}>
+                                    <IconButton size="small" title="Full Screen" onClick={() => setLightboxIndex(index)}>
                                         <Fullscreen size={16} />
                                     </IconButton>
                                 </div>
@@ -459,6 +479,14 @@ export default function GalleryPage() {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
+
+            <Lightbox
+                open={lightboxIndex >= 0}
+                close={() => setLightboxIndex(-1)}
+                index={lightboxIndex}
+                slides={slides}
+                plugins={[Zoom, FullscreenPlugin, Video]}
+            />
         </div>
     );
 }

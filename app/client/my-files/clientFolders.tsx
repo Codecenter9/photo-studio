@@ -103,68 +103,64 @@ const ClientFolders = ({ clientId, activeTab, fetchFolders, folders, setSelected
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         <div className="col-span-3">
-          {folders.map((item) => (
-            <div key={item._id} className="w-full">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {folders.map((folder) => (
-                  <div
-                    onClick={() => handleFolderClick(folder._id)}
-                    key={folder._id}
-                    className="relative flex flex-col items-center gap-3 
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {folders.map((folder) => (
+              <div
+                onClick={() => handleFolderClick(folder._id)}
+                key={folder._id}
+                className="relative flex flex-col items-center gap-3 
                               hover:bg-gray-100 border border-gray-300 
                               cursor-pointer p-2 rounded-md transition-all duration-200" >
-                    <div className="flex items-center justify-center w-12 h-12 bg-yellow-400 rounded-lg">
-                      <Folder size={28} className="text-white" />
-                    </div>
+                <div className="flex items-center justify-center w-12 h-12 bg-yellow-400 rounded-lg">
+                  <Folder size={28} className="text-white" />
+                </div>
 
-                    <p className="font-medium text-gray-800 truncate">
-                      {folder.name}
-                    </p>
+                <p className="font-medium text-gray-800 truncate">
+                  {folder.name}
+                </p>
 
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenDropdownId(
-                          openDropdownId === folder._id ? null : folder._id
-                        );
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenDropdownId(
+                      openDropdownId === folder._id ? null : folder._id
+                    );
+                  }}
+                  className="absolute top-1 right-1"
+                >
+                  <IconButton size="small">
+                    <EllipsisVertical size={16} />
+                  </IconButton>
+                </div>
+                {openDropdownId === folder._id && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute top-10 right-2 bg-white shadow-md border rounded-md py-2 px-3 flex flex-col gap-2 z-10"
+                  >
+                    <span
+                      onClick={() => {
+                        setViewDetailFolderId(folder._id);
+                        setOpenDropdownId(null);
                       }}
-                      className="absolute top-1 right-1"
+                      className="hidden lg:flex text-sm text-gray-600 hover:text-black cursor-pointer"
                     >
-                      <IconButton size="small">
-                        <EllipsisVertical size={16} />
-                      </IconButton>
-                    </div>
-                    {openDropdownId === folder._id && (
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute top-10 right-2 bg-white shadow-md border rounded-md py-2 px-3 flex flex-col gap-2 z-10"
-                      >
-                        <span
-                          onClick={() => {
-                            setViewDetailFolderId(folder._id);
-                            setOpenDropdownId(null);
-                          }}
-                          className="hidden lg:flex text-sm text-gray-600 hover:text-black cursor-pointer"
-                        >
-                          View Details
-                        </span>
+                      View Details
+                    </span>
 
-                        <span
-                          onClick={() => {
-                            setFolderToDelete(folder._id);
-                            setDeleteModalOpen(true);
-                          }}
-                          className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
-                        >
-                          Delete
-                        </span>
-                      </div>
-                    )}
+                    <span
+                      onClick={() => {
+                        setFolderToDelete(folder._id);
+                        setDeleteModalOpen(true);
+                      }}
+                      className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Delete
+                    </span>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
         {viewDetailFolderId && (
           <div className="h-max border border-gray-300 rounded-md p-6">

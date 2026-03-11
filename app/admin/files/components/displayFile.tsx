@@ -3,9 +3,16 @@
 import { IconButton } from '@mui/material'
 import { Fullscreen, RefreshCcw } from 'lucide-react'
 import { CldImage, CldVideoPlayer } from 'next-cloudinary'
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { IFile } from '../../../../types/models/File';
 import EmptyState from '@/components/ui/emptyState';
+
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import FullscreenPlugin from "yet-another-react-lightbox/plugins/fullscreen";
+import Video from "yet-another-react-lightbox/plugins/video";
 
 interface DisplayInterface {
     photos: IFile[];
@@ -15,6 +22,7 @@ interface DisplayInterface {
     setSelectedPhotos: React.Dispatch<React.SetStateAction<string[]>>;
 }
 const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos }: DisplayInterface) => {
+    const [lightboxIndex, setLightboxIndex] = useState(-1);
 
     const toggleSelect = (id: string) => {
         setSelectedPhotos((prev) =>
@@ -24,17 +32,27 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
         );
     };
 
-    const openFullscreen = (photo: IFile) => {
-        const container = document.getElementById(`media-${photo.publicId}`);
-        if (!container) return;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
-        const mediaElement = container.querySelector('img, video');
-        const element = mediaElement || container;
+    const slides = useMemo(() => {
+        return photos.map((file) => {
+            if (file.resourceType === "video") {
+                return {
+                    type: "video" as const,
+                    sources: [
+                        {
+                            src: `https://res.cloudinary.com/${cloudName}/video/upload/${file.publicId}.mp4`,
+                            type: "video/mp4",
+                        },
+                    ],
+                };
+            }
 
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        }
-    };
+            return {
+                src: `https://res.cloudinary.com/${cloudName}/image/upload/${file.publicId}`,
+            };
+        });
+    }, [photos, cloudName]);
 
     return (
         <div className='w-full'>
@@ -54,7 +72,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
 
-                    {photos.map((photo) => (
+                    {photos.map((photo, index) => (
                         <div
                             key={photo.publicId}
                             id={`media-${photo.publicId}`}
@@ -71,8 +89,10 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     className="w-full h-40 object-cover"
                                     crop="fill"
                                     gravity="auto"
+                                    onClick={() => setLightboxIndex(index)}
                                 />
                             ) : (
+                                // <div onClick={() => setLightboxIndex(index)}>
                                 <CldVideoPlayer
                                     src={photo.publicId}
                                     width={360}
@@ -80,7 +100,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     controls
                                     autoPlay={false}
                                     muted={false}
-                                    className="w-full h-40 object-cover"
+                                    className="w-full h-40 object-cover bg-gray-200 flex items-center justify-center cursor-pointer"
                                     colors={{
                                         accent: "#ff0000",
                                         base: "#00ff00",
@@ -88,6 +108,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     }}
                                     fontFace="Source Serif Pro"
                                 />
+                                // </div>
                             )}
 
                             <div
@@ -104,13 +125,21 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     Select
                                 </label>
 
-                                <IconButton size="small" title="Full Screen" onClick={() => openFullscreen(photo)}>
+                                <IconButton size="small" title="Full Screen" onClick={() => setLightboxIndex(index)}>
                                     <Fullscreen size={16} />
                                 </IconButton>
                             </div>
                         </div>
                     ))}</div>
             )}
+
+            <Lightbox
+                open={lightboxIndex >= 0}
+                close={() => setLightboxIndex(-1)}
+                index={lightboxIndex}
+                slides={slides}
+                plugins={[Zoom, FullscreenPlugin, Video]}
+            />
         </div>
     )
 }

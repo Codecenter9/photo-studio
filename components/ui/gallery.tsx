@@ -10,6 +10,9 @@ import Image from "next/image";
 import { IconButton, ImageListItemBar } from "@mui/material";
 import { Info } from "lucide-react";
 
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+
 interface GalleryItem {
     image: string;
     title: string;
@@ -25,6 +28,7 @@ interface GalleryProps {
 
 export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) {
     const [activeCategory, setActiveCategory] = useState("all");
+    const [index, setIndex] = useState(-1);
 
     const categories = useMemo(() => {
         const unique = Array.from(new Set(itemData.map((item) => item.category)));
@@ -36,15 +40,22 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
         return itemData.filter((item) => item.category === activeCategory);
     }, [activeCategory, itemData]);
 
+    const slides = filteredItems.map((item) => ({
+        src: item.image,
+    }));
+
     return (
         <Box sx={{ width: "100%" }}>
             <Stack
                 direction="row"
-                spacing={2}
+                spacing={1}
                 sx={{
                     mb: 4,
-                    flexWrap: "wrap",
-                    justifyContent: "center",
+                    overflowX: "auto",
+                    flexWrap: "nowrap",
+                    justifyContent: "flex-start",
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
                 }}
             >
                 {categories.map((category) => (
@@ -58,6 +69,7 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
                             px: 3,
                             py: 0.2,
                             fontWeight: 500,
+                            flexShrink: 0,
                         }}
                     >
                         {category}
@@ -66,9 +78,10 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
             </Stack>
 
             <ImageList variant="masonry" cols={cols} gap={gap}>
-                {filteredItems.map((item, index) => (
+                {filteredItems.map((item, i) => (
                     <ImageListItem
-                        key={index}
+                        key={i}
+                        onClick={() => setIndex(i)}
                         sx={{
                             overflow: "hidden",
                             borderRadius: 0.5,
@@ -87,11 +100,13 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
                             sx={{
                                 position: "absolute",
                                 inset: 0,
-                                background: "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.25))",
+                                background:
+                                    "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.25))",
                                 transition: "all 0.3s ease",
                                 zIndex: 1,
                             }}
                         />
+
                         <Image
                             className="gallery-image"
                             src={item.image}
@@ -106,11 +121,12 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
                             }}
                             loading="lazy"
                         />
+
                         <ImageListItemBar
                             title={item.title}
                             actionIcon={
                                 <IconButton
-                                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                                    sx={{ color: "rgba(255,255,255,0.7)" }}
                                     aria-label={`info about ${item.title}`}
                                 >
                                     <Info />
@@ -120,6 +136,14 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
                     </ImageListItem>
                 ))}
             </ImageList>
-        </Box >
+
+            {/* Lightbox */}
+            <Lightbox
+                open={index >= 0}
+                close={() => setIndex(-1)}
+                index={index}
+                slides={slides}
+            />
+        </Box>
     );
 }

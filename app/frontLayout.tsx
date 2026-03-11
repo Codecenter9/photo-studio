@@ -10,7 +10,7 @@ export default function FrontLayout({
     children: React.ReactNode;
 }) {
     const path = usePathname();
-    const isAuthPage = path.startsWith("/auth");
+    const isAuthPage = path.startsWith("/auth") || path.startsWith("/admin") || path.startsWith("/client");
 
     return (
         <html lang="en">

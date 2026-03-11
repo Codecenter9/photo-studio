@@ -524,7 +524,7 @@ const ClientPhoto = ({ selectedFolder, setSelectedFolderId }: PhotoSectionProps)
                                 >
 
                                     <span className="">
-                                        {submitting ? "Submiting..." : "Submit"}
+                                        {submitting ? "Submiting..." : activeTab === "UnSelected" ? "Select" : "UnSelect"}
                                     </span>
                                 </div>
                             </div>
