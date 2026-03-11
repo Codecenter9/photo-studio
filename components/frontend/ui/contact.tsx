@@ -20,7 +20,7 @@ const Counter = ({ value }: { value: number }) => {
     }, [value]);
 
     return (
-        <span className="flex items-center text-blue-500 text-4xl font-serif font-semibold">
+        <span className="flex items-center text-gray-500 text-4xl font-serif font-semibold">
             {display}
             <sub className="text-lg">+</sub>
         </span>
@@ -61,9 +61,9 @@ const Contact = () => {
                             >
                                 <Counter value={counter.count} />
 
-                                <hr className="h-full text-gray-300 w-px" />
+                                <div className="h-10 w-px bg-gray-800"></div>
 
-                                <div className="flex flex-col text-blue-500 items-end gap-2">
+                                <div className="flex flex-col text-gray-500 items-end gap-2">
                                     <Icon size={20} />
                                     <span className="text-lg font-serif font-light">
                                         {counter.desc}
@@ -75,13 +75,13 @@ const Contact = () => {
                 </ul>
 
                 <div className="border border-gray-800 p-5 rounded-md flex w-full lg:flex-2 items-center flex-col gap-3">
-                    <h1 className="text-3xl font-semibold text-blue-500 font-serif">Get In Touch</h1>
+                    <h1 className="text-3xl font-semibold text-gray-500 font-serif">Get In Touch</h1>
 
                     <hr className="h-1 w-full text-gray-800" />
 
                     <TextField label="Name" fullWidth className="bg-gray-500 text-white" />
-                    <TextField label="Subject" fullWidth className="bg-gray-500 text-white"/>
-                    <TextField label="Message" multiline rows={4} fullWidth className="bg-gray-500 text-white"/>
+                    <TextField label="Subject" fullWidth className="bg-gray-500 text-white" />
+                    <TextField label="Message" multiline rows={4} fullWidth className="bg-gray-500 text-white" />
                 </div>
             </div>
         </div>

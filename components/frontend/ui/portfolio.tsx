@@ -21,7 +21,7 @@ const Portfolio = () => {
     } else if (isTablet) {
         cols = 2;
     }
-
+    
     return (
         <div className="px-6 py-12 md:px-12 lg:py-24">
             <Gallery itemData={itemdata} cols={cols} gap={15} />

@@ -13,6 +13,10 @@ import { Info } from "lucide-react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import FullscreenPlugin from "yet-another-react-lightbox/plugins/fullscreen";
+import Video from "yet-another-react-lightbox/plugins/video";
+
 interface GalleryItem {
     image: string;
     title: string;
@@ -137,12 +141,12 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
                 ))}
             </ImageList>
 
-            {/* Lightbox */}
             <Lightbox
                 open={index >= 0}
                 close={() => setIndex(-1)}
                 index={index}
                 slides={slides}
+                plugins={[Zoom, FullscreenPlugin, Video]}
             />
         </Box>
     );
