@@ -104,9 +104,6 @@ const Users = () => {
                                                     <td className="p-2">{user.phone}</td>
                                                     <td className="p-2"><span className='px-3 rounded-sm text-sm bg-cyan-100 font-semibold'>{user.role}</span></td>
                                                     <td className="p-2">
-                                                        <IconButton size='small' color="info">
-                                                            <Edit size={16} />
-                                                        </IconButton>
                                                         <IconButton onClick={() => {
                                                             setUserToDelete(user._id);
                                                             setDeleteModalOpen(true);
@@ -146,9 +143,6 @@ const Users = () => {
                                                     <td className="p-2">{user.phone}</td>
                                                     <td className="p-2"><span className='px-3 rounded-sm text-sm bg-cyan-100 font-semibold'>{user.role}</span></td>
                                                     <td className="p-2">
-                                                        <IconButton size='small' color="info">
-                                                            <Edit size={16} />
-                                                        </IconButton>
                                                         <IconButton size='small' color="error">
                                                             <Trash size={16} />
                                                         </IconButton>

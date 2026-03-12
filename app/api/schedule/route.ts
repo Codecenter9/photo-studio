@@ -1,13 +1,14 @@
 import dbConnection from "@/lib/mongodb";
 import Schedule from "@/model/Schedule";
 import User from "@/model/User";
-import {  NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/getCurrentUser";
 import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
     const currentUser = await getCurrentUser();
+
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -15,21 +16,24 @@ export async function GET() {
     await dbConnection();
 
     const schedules = await Schedule.find()
-      .populate("clientId") 
+      .populate("clientId")
       .sort({ createdAt: -1 });
 
     return NextResponse.json({ schedules }, { status: 200 });
+
   } catch (error) {
     console.error("Get Schedules Error:", error);
+
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
     );
   }
 }
+
 export async function POST(req: Request) {
   try {
-  
+
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -42,6 +46,7 @@ export async function POST(req: Request) {
     await dbConnection();
 
     const body = await req.json();
+
     const { clientId, name, phone, scheduleType, notes } = body;
 
     const errors: Record<string, string> = {};
@@ -70,31 +75,29 @@ export async function POST(req: Request) {
           { status: 404 }
         );
       }
-    } else {
-      const existingUser = await User.findOne({ phone });
+    }
 
-      if (existingUser) {
-        client = existingUser;
-      } else {
-        const randomNumber = Math.floor(Math.random() * 10000);
-        const safeName = name.replace(/\s+/g, "").toLowerCase();
-        const generatedEmail = `${safeName}${randomNumber}@client.com`;
+    else {
 
-        const hashedPassword = await bcrypt.hash("1234", 10);
+      const randomNumber = Math.floor(Math.random() * 10000);
+      const safeName = name.replace(/\s+/g, "").toLowerCase();
 
-        client = await User.create({
-          name,
-          phone,
-          email: generatedEmail,
-          password: hashedPassword,
-          role: "client",
-        });
-        console.log("client",client);
-      }
+      const generatedEmail = `${safeName}${randomNumber}@client.com`;
+
+      const hashedPassword = await bcrypt.hash("1234", 10);
+
+      client = await User.create({
+        name,
+        phone,
+        email: generatedEmail,
+        password: hashedPassword,
+        role: "client",
+      });
+
     }
 
     const newSchedule = await Schedule.create({
-      clientId: client._id, 
+      clientId: client._id,
       scheduleType,
       eventDate: new Date(),
       photographerId: currentUser.id,
@@ -108,11 +111,15 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
+
   } catch (error) {
+
     console.error("Schedule Creation Error:", error);
+
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
     );
+
   }
 }
