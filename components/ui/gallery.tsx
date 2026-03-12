@@ -9,6 +9,7 @@ import Stack from "@mui/material/Stack";
 import Image from "next/image";
 import { IconButton, ImageListItemBar } from "@mui/material";
 import { Info } from "lucide-react";
+import { motion } from "framer-motion";
 
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -48,6 +49,22 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
         src: item.image,
     }));
 
+    const fadeUp = {
+        hidden: {
+            opacity: 0,
+            y: 40,
+        },
+        visible: (i: number) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                delay: i * 0.07,
+                duration: 0.45,
+                ease: "easeOut" as const,
+            },
+        }),
+    };
+
     return (
         <Box sx={{ width: "100%" }}>
             <Stack
@@ -83,61 +100,69 @@ export default function Gallery({ itemData, cols = 3, gap = 12 }: GalleryProps) 
 
             <ImageList variant="masonry" cols={cols} gap={gap}>
                 {filteredItems.map((item, i) => (
-                    <ImageListItem
+                    <motion.div
                         key={i}
-                        onClick={() => setIndex(i)}
-                        sx={{
-                            overflow: "hidden",
-                            borderRadius: 0.5,
-                            position: "relative",
-                            cursor: "pointer",
-                            "&:hover .gallery-image": {
-                                transform: "scale(1.1)",
-                            },
-                            "&:hover .overlay": {
-                                opacity: 0.3,
-                            },
-                        }}
+                        variants={fadeUp}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        custom={i}
                     >
-                        <Box
-                            className="overlay"
+                        <ImageListItem
+                            onClick={() => setIndex(i)}
                             sx={{
-                                position: "absolute",
-                                inset: 0,
-                                background:
-                                    "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.25))",
-                                transition: "all 0.3s ease",
-                                zIndex: 1,
+                                overflow: "hidden",
+                                borderRadius: 0.5,
+                                position: "relative",
+                                cursor: "pointer",
+                                "&:hover .gallery-image": {
+                                    transform: "scale(1.1)",
+                                },
+                                "&:hover .overlay": {
+                                    opacity: 0.3,
+                                },
                             }}
-                        />
+                        >
+                            <Box
+                                className="overlay"
+                                sx={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    background:
+                                        "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.25))",
+                                    transition: "all 0.3s ease",
+                                    zIndex: 1,
+                                }}
+                            />
 
-                        <Image
-                            className="gallery-image"
-                            src={item.image}
-                            alt={item.title}
-                            width={500}
-                            height={500}
-                            style={{
-                                width: "100%",
-                                height: "auto",
-                                objectFit: "cover",
-                                transition: "transform 0.5s ease",
-                            }}
-                            loading="lazy"
-                        />
+                            <Image
+                                className="gallery-image"
+                                src={item.image}
+                                alt={item.title}
+                                width={500}
+                                height={500}
+                                style={{
+                                    width: "100%",
+                                    height: "auto",
+                                    objectFit: "cover",
+                                    transition: "transform 0.5s ease",
+                                }}
+                                loading="lazy"
+                            />
 
-                        <ImageListItemBar
-                            title={item.title}
-                            actionIcon={
-                                <IconButton
-                                    sx={{ color: "rgba(255,255,255,0.7)" }}
-                                    aria-label={`info about ${item.title}`}
-                                >
-                                    <Info />
-                                </IconButton>
-                            }
-                        />
-                    </ImageListItem>
+                            <ImageListItemBar
+                                title={item.title}
+                                actionIcon={
+                                    <IconButton
+                                        sx={{ color: "rgba(255,255,255,0.7)" }}
+                                        aria-label={`info about ${item.title}`}
+                                    >
+                                        <Info />
+                                    </IconButton>
+                                }
+                            />
+                        </ImageListItem>
+                    </motion.div>
                 ))}
             </ImageList>
 

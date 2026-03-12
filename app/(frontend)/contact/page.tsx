@@ -1,10 +1,35 @@
 "use client";
 
 import SectionLandingPage from "@/components/frontend/layout/sectionLandingPage";
-import { Button, Divider, TextField } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { Mail, MapPin, Phone } from "lucide-react";
 import React from "react";
 import { FacebookIcon, TelegramIcon, ThreadsIcon, TwitterIcon, WhatsappIcon } from "react-share";
+import { motion } from "framer-motion";
+
+const container = {
+    hidden: {},
+    visible: {
+        transition: {
+            staggerChildren: 0.15,
+        },
+    },
+};
+
+const fadeUp = {
+    hidden: {
+        opacity: 0,
+        y: 40,
+    },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: "easeOut" as const,
+        },
+    },
+};
 
 const Contact = () => {
     return (
@@ -15,46 +40,55 @@ const Contact = () => {
             />
 
             <div className="flex flex-col gap-10 px-6 py-12 md:px-12 lg:py-24">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                    <div className="flex items-center gap-6 p-6 rounded-md border border-gray-300 bg-gray-100 transition">
 
-                        <Mail className="text-gray-700" size={36} />
+                {/* Contact Info Cards */}
+                <motion.div
+                    variants={container}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-3"
+                >
+                    {[
+                        { icon: Mail, text: "meskot@gmail.com" },
+                        { icon: Phone, text: "+251 900 000 000" },
+                        { icon: MapPin, text: "Addis Ababa, Ethiopia" },
+                    ].map((item, i) => {
+                        const Icon = item.icon;
 
-                        <div className="h-10 w-px bg-gray-300"></div>
+                        return (
+                            <motion.div
+                                key={i}
+                                variants={fadeUp}
+                                whileHover={{ scale: 1.03 }}
+                                className="flex items-center gap-6 p-6 rounded-md border border-gray-300 bg-gray-100 transition"
+                            >
+                                <Icon className="text-gray-700" size={36} />
 
-                        <span className="text-lg md:text-xl font-serif tracking-wide text-gray-800">
-                            meskot@gmail.com
-                        </span>
+                                <div className="h-10 w-px bg-gray-300"></div>
 
-                    </div>
+                                <span className="text-lg md:text-xl font-serif tracking-wide text-gray-800">
+                                    {item.text}
+                                </span>
+                            </motion.div>
+                        );
+                    })}
+                </motion.div>
 
-                    <div className="flex items-center gap-5 p-6 rounded-md border border-gray-300 bg-gray-100 transition">
+                {/* Map + Form */}
+                <motion.div
+                    variants={container}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-5"
+                >
 
-                        <Phone className="text-gray-700" size={36} />
-
-                        <div className="h-10 w-px bg-gray-300"></div>
-
-                        <span className="text-lg md:text-xl font-serif tracking-wide text-gray-800">
-                            +251 900 000 000
-                        </span>
-
-                    </div>
-
-                    <div className="flex items-center gap-5 p-6 rounded-md border border-gray-300 bg-gray-100 transition">
-                        <MapPin className="text-gray-700" size={36} />
-
-                        <div className="h-10 w-px bg-gray-300"></div>
-
-                        <span className="text-lg md:text-xl font-serif tracking-wide text-gray-800">
-                            Addis Ababa, Ethiopia
-                        </span>
-
-                    </div>
-
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-                    <div className="w-full h-100 rounded-md overflow-hidden">
+                    {/* Map */}
+                    <motion.div
+                        variants={fadeUp}
+                        className="w-full h-100 rounded-md overflow-hidden"
+                    >
                         <iframe
                             src="https://www.google.com/maps?q=Addis%20Ababa&output=embed"
                             width="100%"
@@ -62,33 +96,55 @@ const Contact = () => {
                             loading="lazy"
                             className="border-0"
                         ></iframe>
-                    </div>
+                    </motion.div>
 
-                    <div className="border border-gray-300 p-5 rounded-md flex w-full lg:flex-2 items-center flex-col gap-3">
-                        <h1 className="text-3xl font-semibold text-blue-500 font-serif">Get In Touch</h1>
+                    {/* Contact Form */}
+                    <motion.div
+                        variants={fadeUp}
+                        className="border border-gray-300 p-5 rounded-md flex w-full items-center flex-col gap-3"
+                    >
+                        <h1 className="text-3xl font-semibold text-blue-500 font-serif">
+                            Get In Touch
+                        </h1>
 
                         <hr className="h-1 w-full text-gray-300" />
 
                         <TextField label="Name" fullWidth />
                         <TextField label="Subject" fullWidth />
                         <TextField label="Message" multiline rows={4} fullWidth />
-                        <Button variant="outlined" size="medium" fullWidth>Send Message</Button>
+
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-full"
+                        >
+                            <Button variant="outlined" size="medium" fullWidth>
+                                Send Message
+                            </Button>
+                        </motion.div>
 
                         <div className="w-full flex items-center justify-center gap-1 mt-5">
                             <hr className="h-1 text-gray-300 w-full" />
                             <span className="w-full text-base text-center">Follow Us</span>
                             <hr className="h-1 text-gray-300 w-full" />
                         </div>
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <TelegramIcon size={32} round className="cursor-pointer" />
-                            <TwitterIcon size={32} round className="cursor-pointer" />
-                            <FacebookIcon size={32} round className="cursor-pointer" />
-                            <ThreadsIcon size={32} round className="cursor-pointer" />
-                            <WhatsappIcon size={32} round className="cursor-pointer" />
-                        </div>
-                    </div>
 
-                </div>
+                        {/* Social Icons */}
+                        <div className="flex items-center gap-3 flex-wrap">
+                            {[TelegramIcon, TwitterIcon, FacebookIcon, ThreadsIcon, WhatsappIcon].map((Icon, i) => (
+                                <motion.div
+                                    key={i}
+                                    whileHover={{ scale: 1.15 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="cursor-pointer"
+                                >
+                                    <Icon size={32} round />
+                                </motion.div>
+                            ))}
+                        </div>
+
+                    </motion.div>
+                </motion.div>
             </div>
         </div>
     );

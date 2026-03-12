@@ -90,7 +90,7 @@ const ClientPhotoDisplay = ({
                                     sizes="100vw"
                                     crop="fill"
                                     gravity="auto"
-                                    className="w-full h-40 object-cover cursor-pointer"
+                                    className="w-full  h-60 md:h-80  object-cover cursor-pointer hover:scale-105 transition-all duration-300"
                                     onClick={() => setLightboxIndex(index)}
                                 />
                             ) : (
@@ -113,7 +113,7 @@ const ClientPhotoDisplay = ({
                                 // </div>
                             )}
 
-                            <div className="absolute bottom-0 left-0 w-full bg-white/90 px-2 py-1 flex items-center justify-between transition-all duration-300 opacity-100 group-hover:opacity-100">
+                            <div className="absolute bottom-0 left-0 w-full bg-white/20 px-2 py-1 flex items-center justify-between transition-all duration-300 opacity-100 group-hover:opacity-100">
                                 <label className="flex items-center gap-1 text-sm cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -129,7 +129,7 @@ const ClientPhotoDisplay = ({
                                     title="View Fullscreen"
                                     onClick={() => setLightboxIndex(index)}
                                 >
-                                    <Fullscreen size={16} />
+                                    <Fullscreen size={16} className="text-white" />
                                 </IconButton>
                             </div>
                         </div>

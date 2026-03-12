@@ -86,7 +86,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                     width={360}
                                     height={300}
                                     sizes="100vw"
-                                    className="w-full h-40 object-cover"
+                                    className="w-full h-60 md:h-80  object-cover cursor-pointer hover:scale-105 transition-all duration-300"
                                     crop="fill"
                                     gravity="auto"
                                     onClick={() => setLightboxIndex(index)}
@@ -112,10 +112,10 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                             )}
 
                             <div
-                                className="w-full absolute bottom-0 left-0 bg-white/90 px-2 py-1 flex items-center justify-between transition-all duration-300
+                                className="w-full absolute bottom-0 left-0 bg-white/20 px-2 py-1 flex items-center justify-between transition-all duration-300
                     opacity-100 group-hover:opacity-100 group-hover:translate-y-0"
                             >
-                                <label className="flex items-center gap-1 text-sm cursor-pointer">
+                                <label className="flex items-center gap-1 text-sm text-gray-900 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={selectedPhotos.includes(photo.publicId)}
@@ -126,7 +126,7 @@ const DisplayFile = ({ photos, loading, error, selectedPhotos, setSelectedPhotos
                                 </label>
 
                                 <IconButton size="small" title="Full Screen" onClick={() => setLightboxIndex(index)}>
-                                    <Fullscreen size={16} />
+                                    <Fullscreen size={16} className='text-white' />
                                 </IconButton>
                             </div>
                         </div>

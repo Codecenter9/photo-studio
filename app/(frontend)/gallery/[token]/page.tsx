@@ -143,7 +143,7 @@ export default function GalleryPage({
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
 
                         <div className="col-span-3">
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                                 {filteredFiles.map((photo, index) => (
 
@@ -162,7 +162,7 @@ export default function GalleryPage({
                                                 sizes="100vw"
                                                 crop="fill"
                                                 gravity="auto"
-                                                className="w-full h-40 object-cover cursor-pointer"
+                                                className="w-full h-80  object-cover cursor-pointer"
                                                 onClick={() => setLightboxIndex(index)}
                                             />
 

@@ -349,7 +349,7 @@ export default function GalleryPage() {
                                         width={360}
                                         height={300}
                                         sizes="100vw"
-                                        className="w-full h-40 object-cover cursor-pointer"
+                                        className="w-full h-60 md:h-80 object-cover cursor-pointer"
                                         crop="fill"
                                         gravity="auto"
                                         onClick={() => setLightboxIndex(index)}
@@ -375,7 +375,7 @@ export default function GalleryPage() {
                                 )}
 
                                 <div
-                                    className="absolute bottom-0 left-0 w-full bg-white/90 px-2 py-1 flex items-center justify-between transition-all duration-300
+                                    className="absolute bottom-0 left-0 w-full bg-white/20 px-2 py-1 flex items-center justify-between transition-all duration-300
                                                    opacity-100 group-hover:opacity-100 group-hover:translate-y-0"
                                 >
                                     <label className="flex items-center gap-1 text-sm cursor-pointer">
@@ -389,7 +389,7 @@ export default function GalleryPage() {
                                     </label>
 
                                     <IconButton size="small" title="Full Screen" onClick={() => setLightboxIndex(index)}>
-                                        <Fullscreen size={16} />
+                                        <Fullscreen size={16} className="text-white"/>
                                     </IconButton>
                                 </div>
                             </div>
